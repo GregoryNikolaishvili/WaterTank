@@ -1,7 +1,7 @@
 #include "WaterTank.h"
 
-#include <Time.h>					// http://www.pjrc.com/teensy/td_libs_Time.html
-#include <DS1307RTC.h>				// http://www.pjrc.com/teensy/td_libs_DS1307RTC.html
+#include <TimeLib.h>				// https://github.com/PaulStoffregen/Time
+#include <DS1307RTC.h>				// https://github.com/PaulStoffregen/DS1307RTC
 
 #include <NewPing.h>				// https://code.google.com/p/arduino-new-ping/
 #include <Bounce.h>

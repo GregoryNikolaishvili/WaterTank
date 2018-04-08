@@ -1,5 +1,5 @@
 #include <arduino.h>
-#include <Time.h>					// http://www.pjrc.com/teensy/td_libs_Time.html
+#include <TimeLib.h>					// http://www.pjrc.com/teensy/td_libs_Time.html
 
 
 #define SIMULATION_MODE
@@ -40,10 +40,10 @@ const unsigned int ERR_ULTRASONIC_3 = 8;
 #define PIN_SOLENOID_IN2 9
 
 // W5100 mini
-//NSS   – Pin 10 from Arduino
-//MO    – Pin 11 from Arduino(MOSI)
-//MI    – Pin 12 from Arduino(MISO)
-//SOK   – Pin 13 from Arduino(SCK)
+//NSS   ï¿½ Pin 10 from Arduino
+//MO    ï¿½ Pin 11 from Arduino(MOSI)
+//MI    ï¿½ Pin 12 from Arduino(MISO)
+//SOK   ï¿½ Pin 13 from Arduino(SCK)
 
 #define PIN_BLINKING_LED A3
 
@@ -60,7 +60,7 @@ const int SOLENOID_OFF_DELAY_SEC = 15;
 #endif
 
 
-typedef struct SettingStructure {
+struct SettingStructure {
 	int MaxDistance;
 	int MinDistance;
 };

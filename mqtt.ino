@@ -32,7 +32,7 @@ void ProcessMqtt()
 	mqttClient.loop();
 }
 
-void PublishMqtt(char* topic, char* message, int len, boolean retained)
+void PublishMqtt(const char* topic, const char* message, int len, boolean retained)
 {
 	Serial.print(F("Publish. topic="));
 	Serial.print(topic);
@@ -98,7 +98,8 @@ void PublishSensorState(byte id, bool isRefresh)
 {
 	if (!mqttClient.connected()) return;
 
-	char* topic = "cha/wl/state/?";
+	char topic[15];
+	strcpy(topic, "cha/wl/state/?");
 	topic[7] = isRefresh ? 'S' : 's';
 	topic[13] = byteToHexChar(id);
 
@@ -113,7 +114,7 @@ void PublishSettings()
 {
 	if (!mqttClient.connected()) return;
 
-	char* topic = "cha/wl/settings";
+	const char* topic = "cha/wl/settings";
 	int idx = 0;
 
 	for (byte i = 0; i < TANK_COUNT; i++)
@@ -172,13 +173,23 @@ void callback(char* topic, byte * payload, unsigned int len) {
 			int yr, month, day;
 			int hr, min, sec;
 
-			yr = 2000 + (*data++ - '0') * 10 + (*data++ - '0');
-			month = (*data++ - '0') * 10 + (*data++ - '0');
-			day = (*data++ - '0') * 10 + (*data++ - '0');
-			*data++;
-			hr = (*data++ - '0') * 10 + (*data++ - '0');
-			min = (*data++ - '0') * 10 + (*data++ - '0');
-			sec = (*data++ - '0') * 10 + (*data++ - '0');
+			yr = 2000 + (*data++ - '0') * 10;
+			yr += (*data++ - '0');
+
+			month = (*data++ - '0') * 10;
+			month += (*data++ - '0');
+
+			day = (*data++ - '0') * 10;
+			day += (*data++ - '0');
+
+			data++;
+
+			hr = (*data++ - '0') * 10;
+			hr += (*data++ - '0');
+			min = (*data++ - '0') * 10;
+			min += (*data++ - '0');
+			sec = (*data++ - '0') * 10;
+			sec += (*data++ - '0');
 
 			setTime(hr, min, sec, day, month, yr);
 			printDateTime(&Serial, now());
