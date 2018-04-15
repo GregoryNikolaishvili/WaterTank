@@ -9,6 +9,8 @@
 #include <Ethernet.h>
 #include <PubSubClient.h>			// https://github.com/knolleary/pubsubclient
 
+#include <avr/wdt.h>
+
 unsigned long halfSecondTicks = 0;
 unsigned long secondTicks = 0;
 
@@ -29,8 +31,11 @@ SettingStructure settings[TANK_COUNT];
 
 void setup()
 {
+	wdt_disable();
+
 	Serial.begin(115200);
-	Serial.println("Initializing..");
+	Serial.println();
+	Serial.println(F("Initializing.. ver. 0.0.1"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -46,6 +51,10 @@ void setup()
 
 	pinMode(PIN_SOLENOID_IN1, OUTPUT);
 	pinMode(PIN_SOLENOID_IN2, OUTPUT);
+	pinMode(PIN_SOLENOID_IN3, OUTPUT);
+	pinMode(PIN_SOLENOID_IN4, OUTPUT);
+	pinMode(PIN_SOLENOID_IN5, OUTPUT);
+	pinMode(PIN_SOLENOID_IN6, OUTPUT);
 
 	pinMode(PIN_FLOAT_SWITCH_1, INPUT_PULLUP);
 	pinMode(PIN_FLOAT_SWITCH_2, INPUT_PULLUP);
@@ -61,9 +70,18 @@ void setup()
 
 	InitMqtt();
 
-	Serial.println(F("Start"));
+	//startMeasuringWaterLevel(0);
+//	delay(500);
+	//startMeasuringWaterLevel(1);
+//	delay(500);
+	//startMeasuringWaterLevel(2);
+//	delay(500);
 
 	processWaterLevels(); // duplicate. same is in loop
+
+	Serial.println(F("Start"));
+
+	wdt_enable(WDTO_8S);
 }
 
 void loop()
@@ -73,9 +91,10 @@ void loop()
 
 	uint32_t dt = previousMillis > _current_millis ? 1 + previousMillis + ~_current_millis : _current_millis - previousMillis;
 
-	//if ((_current_millis < previousMillis) || (_current_millis - previousMillis >= 500))
 	if (dt >= 500)
 	{
+		wdt_reset();
+
 		// save the last time we blinked the LED
 		previousMillis = _current_millis;
 		oncePerHalfSecond();
@@ -95,16 +114,14 @@ void oncePerHalfSecond(void)
 	blinkingLedState = !blinkingLedState;
 	digitalWrite(PIN_BLINKING_LED, blinkingLedState);
 
-	//if ((halfSecondTicks - 2) % PROCESS_INTERVAL_TEMPERATURE_SENSOR_HALF_SEC == 0) // 1 second before processing temperatures
-	//	solarSensor.readRTD_step1();
-	//if ((halfSecondTicks - 1) % PROCESS_INTERVAL_TEMPERATURE_SENSOR_HALF_SEC == 0) // 0.5 second before processing temperatures
-	//	solarSensor.readRTD_step2();
-	//if (halfSecondTicks % PROCESS_INTERVAL_TEMPERATURE_SENSOR_HALF_SEC == 0)
-	//{
-	//	solarSensor.readRTD_step3();
-	//	ProcessBoilerSensors();
-	//}
-
+	//if ((halfSecondTicks + 3) % 10 == 0) // 1.5 second before processing water levels
+	//	startMeasuringWaterLevel(0);
+	//else
+	//	if ((halfSecondTicks + 2) % 10 == 0) // 1 second before processing water levels
+	//		startMeasuringWaterLevel(1);
+	//	else
+	//		if ((halfSecondTicks + 1) % 10 == 0) // 0.5 second before processing temperatures
+	//			startMeasuringWaterLevel(2);
 
 	if ((halfSecondTicks % 2) == 0)
 		oncePerSecond();
@@ -119,7 +136,6 @@ void oncePerSecond()
 
 	if ((secondTicks % 60) == 0)
 		oncePer1Minute();
-
 }
 
 void oncePer5Second()
@@ -162,7 +178,7 @@ boolean state_clear_error_bit(int mask)
 	return false;
 }
 
-// called every second
+// called every 5 second
 void processWaterLevels()
 {
 	bouncerWL1.update();
@@ -183,6 +199,7 @@ void processTankWL(byte id)
 {
 	static unsigned long prevSumpFullSeconds[TANK_COUNT] = { 0, 0, 0 };
 
+	//TODO
 	boolean b1 = ultrasound_sensor_distances[id] <= settings[id].MaxDistance;  // 07FFF = Error and should be considered as full & empty at the same time
 	boolean b2 = float_switch_states[id];
 

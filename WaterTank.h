@@ -32,20 +32,24 @@ const unsigned int ERR_ULTRASONIC_3 = 8;
 #define PIN_ULTRASONIC_2_TX 4
 #define PIN_ULTRASONIC_2_RX 5
 
-#define PIN_FLOAT_SWITCH_3 A2
+#define PIN_FLOAT_SWITCH_3 A0
 #define PIN_ULTRASONIC_3_TX 6
 #define PIN_ULTRASONIC_3_RX 7
 
-#define PIN_SOLENOID_IN1 8
-#define PIN_SOLENOID_IN2 9
+#define PIN_SOLENOID_IN1 30
+#define PIN_SOLENOID_IN2 31
+#define PIN_SOLENOID_IN3 32
+#define PIN_SOLENOID_IN4 33
+#define PIN_SOLENOID_IN5 34
+#define PIN_SOLENOID_IN6 35
 
 // W5100 mini
-//NSS   � Pin 10 from Arduino
-//MO    � Pin 11 from Arduino(MOSI)
-//MI    � Pin 12 from Arduino(MISO)
-//SOK   � Pin 13 from Arduino(SCK)
+//NSS   – Pin 10 from Arduino
+//MO    – Pin 11 from Arduino(MOSI)
+//MI    – Pin 12 from Arduino(MISO)
+//SOK   – Pin 13 from Arduino(SCK)
 
-#define PIN_BLINKING_LED A3
+#define PIN_BLINKING_LED 9
 
 
 // A4(SDA) and A5(SCL)

@@ -7,10 +7,13 @@ const int SUMP_EMPTY_DISTANCE = 350; // mm
 const int HOSP_FULL_DISTANCE = 110; // mm
 const int HOSP_EMPTY_DISTANCE = 350; // mm
 
+byte currentSonarId = 0;
 
-NewPing us_sensor1(PIN_ULTRASONIC_1_TX, PIN_ULTRASONIC_1_RX, 300); // NewPing setup of pins and maximum distance.
-NewPing us_sensor2(PIN_ULTRASONIC_2_TX, PIN_ULTRASONIC_2_RX, 300);
-NewPing us_sensor3(PIN_ULTRASONIC_3_TX, PIN_ULTRASONIC_3_RX, 300);
+NewPing sonars[TANK_COUNT] = {
+	NewPing(PIN_ULTRASONIC_1_TX, PIN_ULTRASONIC_1_RX, 250), // NewPing setup of pins and maximum distance.
+	NewPing(PIN_ULTRASONIC_2_TX, PIN_ULTRASONIC_2_RX, 250),
+	NewPing(PIN_ULTRASONIC_3_TX, PIN_ULTRASONIC_3_RX, 250)
+};
 
 extern SettingStructure settings[TANK_COUNT];
 
@@ -19,42 +22,65 @@ void initUltrasonicSensors()
 	state_clear_error_bit(ERR_ULTRASONIC_1 | ERR_ULTRASONIC_2 | ERR_ULTRASONIC_3);
 }
 
+void startMeasuringWaterLevel(byte sonarId)
+{
+	//Serial.print("Start measuring sensor #");
+	//Serial.println(sonarId + 1);
+	
+	sonars[currentSonarId].timer_stop();
+	currentSonarId = sonarId;
+	sonars[sonarId].ping_timer(echoCheck);
+}
+
+void echoCheck() {
+	//Serial.print("Checking sensor #");
+	//Serial.println(currentSonarId + 1);
+
+	if (sonars[currentSonarId].check_timer())
+	{
+		int  distance = sonars[currentSonarId].ping_result / US_ROUNDTRIP_CM;
+		if (distance == 32767)
+			distance = -1;
+
+		Serial.print("Result of sensor #");
+		Serial.print(currentSonarId + 1);
+		Serial.print(": ");
+		Serial.println(distance);
+
+	if (distance <= 0)
+	{
+			setUltrasoundSensorState(currentSonarId, MAX_DISTANCE);
+			//state_set_error_bit(1 >> (currentSonarId + 1));
+	}
+	else
+	{
+			setUltrasoundSensorState(currentSonarId, distance);
+			//state_clear_error_bit(1 >> (currentSonarId + 1));
+	}
+	}
+	else
+	{
+		//Serial.print("Waiting for sensor #");
+		//Serial.println(currentSonarId + 1);
+	}
+}
+
 void processUltrasonicSensors()
 {
-	int  distance = us_sensor1.ping_cm();
+	for (byte id = 0; id < TANK_COUNT; id++)
+	{
+		int  distance = sonars[id].ping_cm();
+		
 	if (distance <= 0)
 	{
-		setUltrasoundSensorState(ULTRASOUND_SENSOR_1, MAX_DISTANCE);
-		state_set_error_bit(ERR_ULTRASONIC_1);
+			setUltrasoundSensorState(id, MAX_DISTANCE);
+			state_clear_error_bit(1 >> (id + 1));
 	}
 	else
 	{
-		setUltrasoundSensorState(ULTRASOUND_SENSOR_1, distance);
-		state_clear_error_bit(ERR_ULTRASONIC_1);
-	}
-
-	distance = us_sensor2.ping_cm();
-	if (distance <= 0)
-	{
-		setUltrasoundSensorState(ULTRASOUND_SENSOR_2, MAX_DISTANCE);
-		state_set_error_bit(ERR_ULTRASONIC_2);
-	}
-	else
-	{
-		setUltrasoundSensorState(ULTRASOUND_SENSOR_2, distance);
-		state_clear_error_bit(ERR_ULTRASONIC_2);
-	}
-
-	us_sensor3.ping_cm();
-	if (distance <= 0)
-	{
-		setUltrasoundSensorState(ULTRASOUND_SENSOR_3, MAX_DISTANCE);
-		state_set_error_bit(ERR_ULTRASONIC_3);
-	}
-	else
-	{
-		setUltrasoundSensorState(ULTRASOUND_SENSOR_3, distance);
-		state_clear_error_bit(ERR_ULTRASONIC_3);
+			setUltrasoundSensorState(id, distance);
+			state_clear_error_bit(1 >> (id + 1));
+		}
 	}
 }
 
@@ -73,7 +99,7 @@ void setUltrasoundSensorState(byte id, int value)
 		Serial.print(F(" = "));
 		Serial.print(value);
 		Serial.print(F(" cm, "));
-		Serial.print(ultrasound_sensor_distances[id]);
+		Serial.print(ultrasound_sensor_percents[id]);
 		Serial.println(F("%"));
 	}
 }
