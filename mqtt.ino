@@ -51,6 +51,13 @@ void PublishMqtt(const char* topic, const char* message, int len, boolean retain
 	mqttClient.publish(topic, (byte*)message, len, retained);
 }
 
+void PublishMqttAlive(const char* topic)
+{
+	setHexInt32(buffer, now(), 0);
+	PublishMqtt(topic, buffer, 8, false);
+}
+
+
 void ReconnectMqtt() {
 
 	if (!mqttClient.connected()) {
@@ -73,7 +80,7 @@ void ReconnectMqtt() {
 
 			PublishControllerState();
 			PublishSettings();
-			PublishAllStates(false, true);
+			PublishAllStates(true);
 		}
 		else {
 			Serial.print(F("failed, rc="));
@@ -90,28 +97,26 @@ void PublishControllerState()
 	PublishMqtt("cha/wl/state", buffer, 4, true);
 }
 
-void PublishAllStates(bool isRefresh, bool isInitialState)
+void PublishAllStates(bool isInitialState)
 {
-	//if (!isInitialState)
-		for (byte id = 0; id < TANK_COUNT; id++)
-			PublishSensorState(id, isRefresh);
+	for (byte id = 0; id < TANK_COUNT; id++)
+		PublishSensorState(id);
 }
 
 
-void PublishSensorState(byte id, bool isRefresh)
+void PublishSensorState(byte id)
 {
 	if (!mqttClient.connected()) return;
 
 	char topic[15];
 	strcpy(topic, "cha/wl/state/?");
-	topic[7] = isRefresh ? 'S' : 's';
 	topic[13] = byteToHexChar(id);
 
 	setHexInt16(buffer, ultrasound_sensor_distances[id], 0);
 	setHexInt16(buffer, ultrasound_sensor_percents[id], 4);
 	buffer[8] = float_switch_states[id] ? '1' : '0';
 	buffer[9] = solenoid_states[id] ? '1' : '0';
-	PublishMqtt(topic, buffer, 10, !isRefresh);
+	PublishMqtt(topic, buffer, 10, true);
 }
 
 void PublishSettings()
@@ -146,7 +151,8 @@ void callback(char* topic, byte * payload, unsigned int len) {
 
 	if (strcmp(topic, "chac/wl/refresh") == 0)
 	{
-		PublishAllStates(true, false);
+		PublishAllStates(false);
+		PublishMqttAlive("cha/wl/alive");
 
 		return;
 	}

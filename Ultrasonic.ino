@@ -92,7 +92,7 @@ void setUltrasoundSensorState(byte id, int value)
 
 		setWaterLevelPercent(id, value);
 
-		PublishSensorState(id, false);
+		PublishSensorState(id);
 
 		Serial.print(F("Ultrasonic #"));
 		Serial.print(id + 1);
@@ -123,6 +123,6 @@ void recalcWaterLevelPercents()
 	{
 		setWaterLevelPercent(id, ultrasound_sensor_distances[id]);
 
-		PublishSensorState(id, false);
+		PublishSensorState(id);
 	}
 }

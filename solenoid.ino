@@ -48,7 +48,7 @@ void setSolenoid(byte id, bool value)
 
 		solenoid_states[id] = value;
 
-		PublishSensorState(id, false);
+		PublishSensorState(id);
 
 		Serial.print(F("Solenoid #"));
 		Serial.print(id);

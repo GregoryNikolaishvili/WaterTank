@@ -39,7 +39,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 0.0.1"));
+	Serial.println(F("Initializing.. ver. 0.0.2"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -153,7 +153,7 @@ void oncePer5Second()
 void oncePer1Minute()
 {
 	if (secondTicks > 0) // do not publish on startup
-		PublishAllStates(true, false);
+		PublishAllStates(true);
 }
 
 
@@ -234,7 +234,7 @@ void setFloatSwitchState(byte id, bool value)
 	{
 		float_switch_states[id] = value;
 
-		PublishSensorState(id, false);
+		PublishSensorState(id);
 
 		Serial.print(F("Float switch #"));
 		Serial.print(id + 1);
