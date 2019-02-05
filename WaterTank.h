@@ -4,8 +4,10 @@
 
 #define SIMULATION_MODE
 
+const byte RELAY_COUNT = 5;
 
 const unsigned char TANK_COUNT = 3;
+
 
 const int MAX_DISTANCE = 0x7FFF;
 
@@ -36,12 +38,18 @@ const unsigned int ERR_ULTRASONIC_3 = 8;
 #define PIN_ULTRASONIC_3_TX 6
 #define PIN_ULTRASONIC_3_RX 7
 
-#define PIN_SOLENOID_IN1 30
-#define PIN_SOLENOID_IN2 31
-#define PIN_SOLENOID_IN3 32
-#define PIN_SOLENOID_IN4 33
-#define PIN_SOLENOID_IN5 34
-#define PIN_SOLENOID_IN6 35
+#define PIN_SOLENOID_IN1 22
+#define PIN_SOLENOID_IN2 24
+#define PIN_SOLENOID_IN3 26
+#define PIN_SOLENOID_IN4 28
+#define PIN_SOLENOID_IN5 30
+#define PIN_SOLENOID_IN6 32
+
+#define PIN_RELAY_CLEAN_WATER_PUMP 31
+#define PIN_RELAY_TECH_WATER_PUMP 29
+#define PIN_RELAY_GARDEN_PUMP 27
+#define PIN_RELAY_RESERVE_3 25
+#define PIN_RELAY_RESERVE_4 23
 
 // W5100 mini
 //NSS   – Pin 10 from Arduino

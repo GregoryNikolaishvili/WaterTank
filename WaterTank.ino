@@ -30,6 +30,15 @@ bool float_switch_states[TANK_COUNT];
 int ultrasound_sensor_distances[TANK_COUNT];
 int ultrasound_sensor_percents[TANK_COUNT];
 
+byte relayPins[RELAY_COUNT] = {
+  PIN_RELAY_CLEAN_WATER_PUMP,
+  PIN_RELAY_TECH_WATER_PUMP,
+  PIN_RELAY_GARDEN_PUMP,
+  PIN_RELAY_RESERVE_3,
+  PIN_RELAY_RESERVE_4
+};
+
+
 SettingStructure settings[TANK_COUNT];
 
 
@@ -39,10 +48,20 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 0.0.2"));
+	Serial.println(F("Initializing.. ver. 0.0.3"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
+
+	// Init relay
+	for (byte i = 0; i < RELAY_COUNT; i++)
+	{
+		digitalWrite(relayPins[i], HIGH);
+		pinMode(relayPins[i], OUTPUT);
+	}
+
+	//if (dtNBR_ALARMS != 30)
+	//	Serial.println("Alarm count mismatch");
 
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
@@ -70,22 +89,45 @@ void setup()
 
 	InitEthernet();
 
-	delay(2000);
-
 	InitMqtt();
 
-	//startMeasuringWaterLevel(0);
-//	delay(500);
-	//startMeasuringWaterLevel(1);
-//	delay(500);
-	//startMeasuringWaterLevel(2);
-//	delay(500);
+	startMeasuringWaterLevel(0);
+	delay(500);
+	startMeasuringWaterLevel(1);
+	delay(500);
+	startMeasuringWaterLevel(2);
+	delay(500);
 
 	processWaterLevels(); // duplicate. same is in loop
 
-	Serial.println(F("Start"));
+
+	relayOn(0);
+	delay(500);
+	relayOn(1);
+	delay(500);
+	relayOn(2);
+	delay(500);
+	relayOn(3);
+	delay(500);
+	relayOn(4);
+	delay(500);
+
+	relayOff(0);
+	delay(500);
+	relayOff(1);
+	delay(500);
+	relayOff(2);
+	delay(500);
+	relayOff(3);
+	delay(500);
+	relayOff(4);
+	delay(500);
+
 
 	wdt_enable(WDTO_8S);
+
+	Serial.println(F("Start"));
+
 }
 
 void loop()
@@ -105,6 +147,7 @@ void loop()
 	}
 
 	ProcessMqtt();
+	
 	//Alarm.delay(0);
 }
 
@@ -118,14 +161,14 @@ void oncePerHalfSecond(void)
 	blinkingLedState = !blinkingLedState;
 	digitalWrite(PIN_BLINKING_LED, blinkingLedState);
 
-	//if ((halfSecondTicks + 3) % 10 == 0) // 1.5 second before processing water levels
-	//	startMeasuringWaterLevel(0);
-	//else
-	//	if ((halfSecondTicks + 2) % 10 == 0) // 1 second before processing water levels
-	//		startMeasuringWaterLevel(1);
-	//	else
-	//		if ((halfSecondTicks + 1) % 10 == 0) // 0.5 second before processing temperatures
-	//			startMeasuringWaterLevel(2);
+	if ((halfSecondTicks + 3) % 10 == 0) // 1.5 second before processing water levels
+		startMeasuringWaterLevel(0);
+	else
+		if ((halfSecondTicks + 2) % 10 == 0) // 1 second before processing water levels
+			startMeasuringWaterLevel(1);
+		else
+			if ((halfSecondTicks + 1) % 10 == 0) // 0.5 second before processing water levels
+				startMeasuringWaterLevel(2);
 
 	if ((halfSecondTicks % 2) == 0)
 		oncePerSecond();
@@ -153,8 +196,54 @@ void oncePer5Second()
 void oncePer1Minute()
 {
 	if (secondTicks > 0) // do not publish on startup
-		PublishAllStates(true);
+		PublishAllStates(false);
 }
+
+void relaySet(byte id, bool state)
+{
+	if (state)
+		relayOn(id);
+	else
+		relayOff(id);
+}
+
+void relayOn(byte id)
+{
+	if (id < RELAY_COUNT)
+	{
+		digitalWrite(relayPins[id], LOW);
+		PublishRelayState(id, true);
+	}
+}
+
+void relayOff(byte id)
+{
+	if (id < RELAY_COUNT)
+	{
+		digitalWrite(relayPins[id], HIGH);
+		PublishRelayState(id, false);
+	}
+}
+
+bool relayToggle(byte id)
+{
+	bool newState = false;
+	if (id < RELAY_COUNT)
+	{
+		newState = digitalRead(relayPins[id]);
+		digitalWrite(relayPins[id], !newState);
+		PublishRelayState(id, newState);
+	}
+	return newState;
+}
+
+bool isRelayOn(byte id)
+{
+	if (id < RELAY_COUNT)
+		return !digitalRead(relayPins[id]);
+	return false;
+}
+
 
 
 boolean state_set_error_bit(int mask)
@@ -193,18 +282,21 @@ void processWaterLevels()
 	setFloatSwitchState(FLOAT_SWITCH_2, bouncerWL2.read());
 	setFloatSwitchState(FLOAT_SWITCH_3, bouncerWL3.read());
 
-	processUltrasonicSensors();
-
+	//processUltrasonicSensors();
 	for (byte id = 0; id < TANK_COUNT; id++)
 		processTankWL(id);
 }
 
 void processTankWL(byte id)
 {
+	int distance = GetIsrSonarDistance(id);
+	
+	setUltrasoundSensorState(id, distance);
+	
 	static unsigned long prevSumpFullSeconds[TANK_COUNT] = { 0, 0, 0 };
 
 	//TODO
-	boolean b1 = ultrasound_sensor_distances[id] <= settings[id].MaxDistance;  // 07FFF = Error and should be considered as full & empty at the same time
+	boolean b1 = distance <= settings[id].MaxDistance;  // 07FFF = Error and should be considered as full & empty at the same time
 	boolean b2 = float_switch_states[id];
 
 	if (b1 && b2) // if both are on, turn off solenoid immediatley

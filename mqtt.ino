@@ -1,14 +1,13 @@
 byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
 IPAddress ip(192, 168, 2, 7);
-//IPAddress ip(192, 168, 3, 7);
+//IPAddress ip(192, 168, 1, 7);
 
 EthernetClient ethClient;
-//PubSubClient mqttClient("192.168.3.1", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
+//PubSubClient mqttClient("192.168.1.23", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
 
+PubSubClient mqttClient("212.72.150.154", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
 
-PubSubClient mqttClient("37.187.106.16", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
-
-#define MQTT_BUFFER_SIZE 64
+#define MQTT_BUFFER_SIZE 256
 
 char buffer[MQTT_BUFFER_SIZE];
 
@@ -103,7 +102,6 @@ void PublishAllStates(bool isInitialState)
 		PublishSensorState(id);
 }
 
-
 void PublishSensorState(byte id)
 {
 	if (!mqttClient.connected()) return;
@@ -117,6 +115,16 @@ void PublishSensorState(byte id)
 	buffer[8] = float_switch_states[id] ? '1' : '0';
 	buffer[9] = solenoid_states[id] ? '1' : '0';
 	PublishMqtt(topic, buffer, 10, true);
+}
+
+void PublishRelayState(byte id, bool value)
+{
+	if (!mqttClient.connected()) return;
+
+	char topic[12];
+	strcpy(topic, "cha/wl/rs/?");
+	topic[10] = byteToHexChar(id);
+	PublishMqtt(topic, value ? "1" : "0", 1, true);
 }
 
 void PublishSettings()
