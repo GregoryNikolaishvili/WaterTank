@@ -24,13 +24,13 @@ Bounce bouncerWL1(PIN_FLOAT_SWITCH_1, false, 10 * 1000UL, 10 * 1000UL); // 10 se
 Bounce bouncerWL2(PIN_FLOAT_SWITCH_2, false, 10 * 1000UL, 10 * 1000UL); // 10 sec, 10 sec
 Bounce bouncerWL3(PIN_FLOAT_SWITCH_3, false, 10 * 1000UL, 10 * 1000UL); // 10 sec, 10 sec
 
-bool solenoid_states[TANK_COUNT];
+//bool ball_valve_states[TANK_COUNT];
 bool float_switch_states[TANK_COUNT];
 
 int ultrasound_sensor_distances[TANK_COUNT];
 int ultrasound_sensor_percents[TANK_COUNT];
 
-byte relayPins[RELAY_COUNT] = {
+static byte relayPins[RELAY_COUNT] = {
   PIN_RELAY_CLEAN_WATER_PUMP,
   PIN_RELAY_TECH_WATER_PUMP,
   PIN_RELAY_GARDEN_PUMP,
@@ -63,25 +63,37 @@ void setup()
 	//if (dtNBR_ALARMS != 30)
 	//	Serial.println("Alarm count mismatch");
 
-	for (byte id = 0; id < TANK_COUNT; id++)
-	{
-		float_switch_states[id] = true;
-		ultrasound_sensor_distances[id] = MAX_DISTANCE;
-
-		solenoid_states[id] = true; // say that it's open and close it
-		setSolenoid(id, false);
-	}
-
-	pinMode(PIN_SOLENOID_IN1, OUTPUT);
-	pinMode(PIN_SOLENOID_IN2, OUTPUT);
-	pinMode(PIN_SOLENOID_IN3, OUTPUT);
-	pinMode(PIN_SOLENOID_IN4, OUTPUT);
-	pinMode(PIN_SOLENOID_IN5, OUTPUT);
-	pinMode(PIN_SOLENOID_IN6, OUTPUT);
+	pinMode(PIN_HBRIDGE1_IN1, OUTPUT);
+	pinMode(PIN_HBRIDGE1_IN2, OUTPUT);
+	pinMode(PIN_HBRIDGE2_IN1, OUTPUT);
+	pinMode(PIN_HBRIDGE2_IN2, OUTPUT);
+	pinMode(PIN_HBRIDGE3_IN1, OUTPUT);
+	pinMode(PIN_HBRIDGE3_IN2, OUTPUT);
+	pinMode(PIN_HBRIDGE4_IN1, OUTPUT);
+	pinMode(PIN_HBRIDGE4_IN2, OUTPUT);
 
 	pinMode(PIN_FLOAT_SWITCH_1, INPUT_PULLUP);
 	pinMode(PIN_FLOAT_SWITCH_2, INPUT_PULLUP);
 	pinMode(PIN_FLOAT_SWITCH_3, INPUT_PULLUP);
+
+	for (byte id = 0; id < TANK_COUNT; id++)
+	{
+		float_switch_states[id] = true;
+		ultrasound_sensor_distances[id] = MAX_DISTANCE;
+	}
+
+	Serial.println("Closing valves (5 sec)");
+	for (byte id = 0; id < BALL_VALVE_COUNT; id++)
+	{
+		SetHBridge(id, -1); // Start closing
+	}
+
+	delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
+
+	for (byte id = 0; id < BALL_VALVE_COUNT; id++)
+	{
+		SetHBridge(id, 0); // remove power from ball valves
+	}
 
 	readSettings();
 
@@ -99,30 +111,6 @@ void setup()
 	delay(500);
 
 	processWaterLevels(); // duplicate. same is in loop
-
-
-	relayOn(0);
-	delay(500);
-	relayOn(1);
-	delay(500);
-	relayOn(2);
-	delay(500);
-	relayOn(3);
-	delay(500);
-	relayOn(4);
-	delay(500);
-
-	relayOff(0);
-	delay(500);
-	relayOff(1);
-	delay(500);
-	relayOff(2);
-	delay(500);
-	relayOff(3);
-	delay(500);
-	relayOff(4);
-	delay(500);
-
 
 	wdt_enable(WDTO_8S);
 
@@ -147,7 +135,7 @@ void loop()
 	}
 
 	ProcessMqtt();
-	
+
 	//Alarm.delay(0);
 }
 
@@ -180,6 +168,8 @@ void oncePerSecond()
 		oncePer5Second();
 
 	secondTicks++;
+
+	processBallValve();
 
 	if ((secondTicks % 60) == 0)
 		oncePer1Minute();
@@ -290,33 +280,33 @@ void processWaterLevels()
 void processTankWL(byte id)
 {
 	int distance = GetIsrSonarDistance(id);
-	
+
 	setUltrasoundSensorState(id, distance);
-	
-	static unsigned long prevSumpFullSeconds[TANK_COUNT] = { 0, 0, 0 };
+
+	static unsigned long prevFullSeconds[] = { 0, 0, 0, 0 };
 
 	//TODO
 	boolean b1 = distance <= settings[id].MaxDistance;  // 07FFF = Error and should be considered as full & empty at the same time
 	boolean b2 = float_switch_states[id];
 
 	if (b1 && b2) // if both are on, turn off solenoid immediatley
-		setSolenoid(id, false);
+		setBallValve(id, false); // Close
 	else
 		if (b1 || b2) // if at least one is on 
 		{
-			if ((prevSumpFullSeconds[id] > 0) && (secondTicks - prevSumpFullSeconds[id]) >= SOLENOID_OFF_DELAY_SEC) // if 10 min passed since last time when at least one was on, turn off solenoid
-				setSolenoid(id, false);
+			if ((prevFullSeconds[id] > 0) && (secondTicks - prevFullSeconds[id]) >= BALL_VALVE_OFF_DELAY_SEC) // if 10 min passed since last time when at least one was on, turn off solenoid
+				setBallValve(id, false); // Close
 		}
 
 	if (b1 || b2) // if at least one is on 
 	{
-		if (prevSumpFullSeconds[id] == 0)
-			prevSumpFullSeconds[id] = secondTicks;
+		if (prevFullSeconds[id] == 0)
+			prevFullSeconds[id] = secondTicks;
 	}
 	else
 	{
-		prevSumpFullSeconds[id] = 0;
-		setSolenoid(id, true);
+		prevFullSeconds[id] = 0;
+		setBallValve(id, true); // Open
 	}
 }
 

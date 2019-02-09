@@ -19,8 +19,8 @@
     <None Include="Ultrasonic.ino" />
     <None Include="mqtt.ino" />
     <None Include="Utils.ino" />
-    <None Include="solenoid.ino" />
     <None Include="settings.ino" />
+    <None Include="BallValves.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.WaterTank.vsarduino.h">

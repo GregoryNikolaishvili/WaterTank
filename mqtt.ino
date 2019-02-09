@@ -113,8 +113,8 @@ void PublishSensorState(byte id)
 	setHexInt16(buffer, ultrasound_sensor_distances[id], 0);
 	setHexInt16(buffer, ultrasound_sensor_percents[id], 4);
 	buffer[8] = float_switch_states[id] ? '1' : '0';
-	buffer[9] = solenoid_states[id] ? '1' : '0';
-	PublishMqtt(topic, buffer, 10, true);
+	setHexInt16(buffer, ball_valve_state[id], 4);
+	PublishMqtt(topic, buffer, 13, true);
 }
 
 void PublishRelayState(byte id, bool value)
