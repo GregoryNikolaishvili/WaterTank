@@ -75,10 +75,10 @@ typedef void *__builtin_va_list;
 #define pgm_read_ptr(address_short)   short()
 
 #include "WaterTank.ino"
+#include "BallValves.ino"
 #include "Ultrasonic.ino"
 #include "Utils.ino"
 #include "mqtt.ino"
 #include "settings.ino"
-#include "solenoid.ino"
 #endif
 #endif
