@@ -99,10 +99,10 @@ void PublishControllerState()
 void PublishAllStates(bool isInitialState)
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
-		PublishSensorState(id);
+		PublishTankState(id);
 }
 
-void PublishSensorState(byte id)
+void PublishTankState(byte id)
 {
 	if (!mqttClient.connected()) return;
 
@@ -113,7 +113,9 @@ void PublishSensorState(byte id)
 	setHexInt16(buffer, ultrasound_sensor_distances[id], 0);
 	setHexInt16(buffer, ultrasound_sensor_percents[id], 4);
 	buffer[8] = float_switch_states[id] ? '1' : '0';
-	setHexInt16(buffer, ball_valve_state[id], 4);
+	setHexInt16(buffer, ball_valve_state[id], 9);
+	setHexByte(buffer, ball_valve_state2[id], 13);
+
 	PublishMqtt(topic, buffer, 13, true);
 }
 

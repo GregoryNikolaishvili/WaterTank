@@ -24,6 +24,13 @@ Bounce bouncerWL1(PIN_FLOAT_SWITCH_1, false, 10 * 1000UL, 10 * 1000UL); // 10 se
 Bounce bouncerWL2(PIN_FLOAT_SWITCH_2, false, 10 * 1000UL, 10 * 1000UL); // 10 sec, 10 sec
 Bounce bouncerWL3(PIN_FLOAT_SWITCH_3, false, 10 * 1000UL, 10 * 1000UL); // 10 sec, 10 sec
 
+Bounce bouncerBV1Open(PIN_BALL_VALVE1_OPEN, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
+Bounce bouncerBV1Close(PIN_BALL_VALVE1_CLOSED, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
+Bounce bouncerBV2Open(PIN_BALL_VALVE2_OPEN, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
+Bounce bouncerBV2Close(PIN_BALL_VALVE2_CLOSED, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
+Bounce bouncerBV3Open(PIN_BALL_VALVE3_OPEN, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
+Bounce bouncerBV3Close(PIN_BALL_VALVE3_CLOSED, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
+
 //bool ball_valve_states[TANK_COUNT];
 bool float_switch_states[TANK_COUNT];
 
@@ -48,12 +55,12 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 0.0.3"));
+	Serial.println(F("Initializing.. ver. 0.0.5"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
 
-	// Init relay
+	// Init relays
 	for (byte i = 0; i < RELAY_COUNT; i++)
 	{
 		digitalWrite(relayPins[i], HIGH);
@@ -63,37 +70,24 @@ void setup()
 	//if (dtNBR_ALARMS != 30)
 	//	Serial.println("Alarm count mismatch");
 
-	pinMode(PIN_HBRIDGE1_IN1, OUTPUT);
-	pinMode(PIN_HBRIDGE1_IN2, OUTPUT);
-	pinMode(PIN_HBRIDGE2_IN1, OUTPUT);
-	pinMode(PIN_HBRIDGE2_IN2, OUTPUT);
-	pinMode(PIN_HBRIDGE3_IN1, OUTPUT);
-	pinMode(PIN_HBRIDGE3_IN2, OUTPUT);
-	pinMode(PIN_HBRIDGE4_IN1, OUTPUT);
-	pinMode(PIN_HBRIDGE4_IN2, OUTPUT);
-
-	pinMode(PIN_FLOAT_SWITCH_1, INPUT_PULLUP);
-	pinMode(PIN_FLOAT_SWITCH_2, INPUT_PULLUP);
-	pinMode(PIN_FLOAT_SWITCH_3, INPUT_PULLUP);
-
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
 		float_switch_states[id] = true;
 		ultrasound_sensor_distances[id] = MAX_DISTANCE;
 	}
 
-	Serial.println("Closing valves (5 sec)");
-	for (byte id = 0; id < BALL_VALVE_COUNT; id++)
-	{
-		SetHBridge(id, -1); // Start closing
-	}
+	pinMode(PIN_FLOAT_SWITCH_1, INPUT_PULLUP);
+	pinMode(PIN_FLOAT_SWITCH_2, INPUT_PULLUP);
+	pinMode(PIN_FLOAT_SWITCH_3, INPUT_PULLUP);
 
-	delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
+	pinMode(PIN_BALL_VALVE1_OPEN, INPUT_PULLUP);
+	pinMode(PIN_BALL_VALVE1_CLOSED, INPUT_PULLUP);
+	pinMode(PIN_BALL_VALVE2_OPEN, INPUT_PULLUP);
+	pinMode(PIN_BALL_VALVE2_CLOSED, INPUT_PULLUP);
+	pinMode(PIN_BALL_VALVE3_OPEN, INPUT_PULLUP);
+	pinMode(PIN_BALL_VALVE3_CLOSED, INPUT_PULLUP);
 
-	for (byte id = 0; id < BALL_VALVE_COUNT; id++)
-	{
-		SetHBridge(id, 0); // remove power from ball valves
-	}
+	InitializeBallValves();
 
 	readSettings();
 
@@ -115,7 +109,6 @@ void setup()
 	wdt_enable(WDTO_8S);
 
 	Serial.println(F("Start"));
-
 }
 
 void loop()
@@ -268,9 +261,20 @@ void processWaterLevels()
 	bouncerWL2.update();
 	bouncerWL3.update();
 
-	setFloatSwitchState(FLOAT_SWITCH_1, bouncerWL1.read());
-	setFloatSwitchState(FLOAT_SWITCH_2, bouncerWL2.read());
-	setFloatSwitchState(FLOAT_SWITCH_3, bouncerWL3.read());
+	bouncerBV1Open.update();
+	bouncerBV1Close.update();
+	bouncerBV2Open.update();
+	bouncerBV2Close.update();
+	bouncerBV3Open.update();
+	bouncerBV3Close.update();
+
+	setFloatSwitchState(0, bouncerWL1.read());
+	setFloatSwitchState(1, bouncerWL2.read());
+	setFloatSwitchState(2, bouncerWL3.read());
+
+	setBallValveSwitchState(0, bouncerBV1Open.read(), bouncerBV1Close.read());
+	setBallValveSwitchState(1, bouncerBV2Open.read(), bouncerBV2Close.read());
+	setBallValveSwitchState(2, bouncerBV3Open.read(), bouncerBV3Close.read());
 
 	//processUltrasonicSensors();
 	for (byte id = 0; id < TANK_COUNT; id++)
@@ -316,7 +320,7 @@ void setFloatSwitchState(byte id, bool value)
 	{
 		float_switch_states[id] = value;
 
-		PublishSensorState(id);
+		PublishTankState(id);
 
 		Serial.print(F("Float switch #"));
 		Serial.print(id + 1);
@@ -327,5 +331,6 @@ void setFloatSwitchState(byte id, bool value)
 
 bool isTankFull(byte id)
 {
-	return float_switch_states[id] || (ultrasound_sensor_distances[id] == MAX_DISTANCE) || (ultrasound_sensor_distances[id] <= settings[id].MaxDistance);
+	return float_switch_states[id] || (ultrasound_sensor_distances[id] == MAX_DISTANCE) || 
+		(ultrasound_sensor_distances[id] <= settings[id].MaxDistance);
 }
