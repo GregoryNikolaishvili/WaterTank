@@ -228,7 +228,6 @@ bool isRelayOn(byte id)
 }
 
 
-
 boolean state_set_error_bit(int mask)
 {
 	if (!state_is_error_bit_set(mask))

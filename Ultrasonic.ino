@@ -46,21 +46,12 @@ int GetIsrSonarDistance(byte id)
 
 // Isr method. Shold be very fast
 void echoCheck() {
-	//Serial.print("Checking sensor #");
-	//Serial.println(currentSonarId + 1);
-
 	if (sonars[currentSonarId].check_timer())
 	{
 		int  distance = sonars[currentSonarId].ping_result / US_ROUNDTRIP_CM;
-		if (distance == 32767)
-			distance = -1;
 		if (distance < 0)
 			distance = MAX_DISTANCE;
 		isrSonarDistances[currentSonarId] = distance;
-		//Serial.print("Result of sensor #");
-		//Serial.print(currentSonarId + 1);
-		//Serial.print(": ");
-		//Serial.println(distance);
 	}
 }
 
@@ -69,11 +60,11 @@ void setUltrasoundSensorState(byte id, int value)
 	if (ultrasound_sensor_distances[id] != value)
 	{
 		ultrasound_sensor_distances[id] = value;
-		if (value >= 0)
-			state_clear_error_bit(1 >> (id + 1));
+		if (value >= 0 && value != MAX_DISTANCE)
+			state_clear_error_bit(1 << (id + 1));
 		else
-			state_set_error_bit(1 >> (id + 1));
-		
+			state_set_error_bit(1 << (id + 1));
+
 		setWaterLevelPercent(id, value);
 
 		PublishTankState(id);
@@ -92,7 +83,6 @@ int getUltrasoundSensorState(byte id)
 {
 	return ultrasound_sensor_distances[id];
 }
-
 
 void setWaterLevelPercent(int id, int distance)
 {

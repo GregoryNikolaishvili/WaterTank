@@ -1,6 +1,9 @@
 static const int BALL_VALVE_FULLY_CLOSED = -0xFF;
 static const int BALL_VALVE_FULLY_OPEN = 0xFF;
 
+static int ball_valve_state[TANK_COUNT];
+static byte ball_valve_state2[TANK_COUNT];
+
 static byte hBridgePins[2 * HBRIDGE_COUNT] = {
 	PIN_HBRIDGE1_IN1,
 	PIN_HBRIDGE1_IN2,
@@ -33,12 +36,10 @@ void InitializeBallValves()
 	}
 }
 
-static int ball_valve_state[TANK_COUNT];
-static byte ball_valve_state2[TANK_COUNT];
 
 void setBallValve(byte id, bool value)
 {
-	static unsigned long prevOffSeconds[TANK_COUNT] = { 0, 0, 0, 0 };
+	static unsigned long prevOffSeconds[TANK_COUNT] = { 0, 0, 0 };
 
 	if (value > 0)
 	{
@@ -122,7 +123,7 @@ void processBallValve()
 	}
 }
 
-void SetHBridge(byte id, char value)
+static void SetHBridge(byte id, char value)
 {
 	byte pinIn1 = hBridgePins[id * 2];
 	byte pinIn2 = hBridgePins[id * 2 + 1];

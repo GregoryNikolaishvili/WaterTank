@@ -4,12 +4,12 @@
 
 #define SIMULATION_MODE
 
-const byte RELAY_COUNT = 5;
+static const byte RELAY_COUNT = 5;
 
-const byte TANK_COUNT = 3;
-const byte HBRIDGE_COUNT = 4;
+static const byte TANK_COUNT = 3;
+static const byte HBRIDGE_COUNT = 4;
 
-const int MAX_DISTANCE = 0x7FFF;
+static const int MAX_DISTANCE = 0x7FFF;
 
 //const unsigned char FLOAT_SWITCH_1 = 0;
 //const unsigned char FLOAT_SWITCH_2 = 1;
@@ -19,14 +19,14 @@ const int MAX_DISTANCE = 0x7FFF;
 //const unsigned char ULTRASOUND_SENSOR_2 = 1;
 //const unsigned char ULTRASOUND_SENSOR_3 = 2;
 
-const unsigned int ERR_GENERAL = 1;
-const unsigned int ERR_ULTRASONIC_1 = 2;
-const unsigned int ERR_ULTRASONIC_2 = 4;
-const unsigned int ERR_ULTRASONIC_3 = 8;
+static const unsigned int ERR_GENERAL = 1;
+static const unsigned int ERR_ULTRASONIC_1 = 2;
+static const unsigned int ERR_ULTRASONIC_2 = 4;
+static const unsigned int ERR_ULTRASONIC_3 = 8;
 
 #define state_is_error_bit_set(__mask__) ((waterLevelControllerState & (__mask__)) != 0)
 
-#define BALL_VALVE_OPEN_CLOSE_SECONDS 5
+static const byte BALL_VALVE_OPEN_CLOSE_SECONDS = 5;
 
 static const uint8_t PIN_FLOAT_SWITCH_1 = 8;
 static const uint8_t PIN_ULTRASONIC_1_TX = 2;
