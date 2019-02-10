@@ -86,5 +86,6 @@ __vm
 .vs/slnx.sqllite
 .vs
 *.user
+*.suo
 
 
