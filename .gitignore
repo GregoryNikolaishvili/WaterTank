@@ -82,6 +82,9 @@ $RECYCLE.BIN/
 /.vs/WaterTank/v16/.suo
 
 #gia
-__vm/
-.vs/
+__vm
+.vs/slnx.sqllite
+.vs
+*.user
+
 
