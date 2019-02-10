@@ -80,3 +80,8 @@ $RECYCLE.BIN/
 *.lnk
 .vs/WaterTank/v15/.suo
 /.vs/WaterTank/v16/.suo
+
+#gia
+__vm/
+.vs/
+
