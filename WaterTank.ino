@@ -31,7 +31,6 @@ Bounce bouncerBV2Close(PIN_BALL_VALVE2_CLOSED, false, 500UL, 500UL); // 0.5 sec,
 Bounce bouncerBV3Open(PIN_BALL_VALVE3_OPEN, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
 Bounce bouncerBV3Close(PIN_BALL_VALVE3_CLOSED, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
 
-//bool ball_valve_states[TANK_COUNT];
 bool float_switch_states[TANK_COUNT];
 
 int ultrasound_sensor_distances[TANK_COUNT];
@@ -285,6 +284,10 @@ void processTankWL(byte id)
 	int distance = GetIsrSonarDistance(id);
 
 	setUltrasoundSensorState(id, distance);
+	Serial.print("Ultrasonic: ");
+	Serial.print(id);
+	Serial.print(" = ");
+	Serial.println(distance);
 
 	static unsigned long prevFullSeconds[] = { 0, 0, 0, 0 };
 

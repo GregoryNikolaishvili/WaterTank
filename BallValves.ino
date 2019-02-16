@@ -94,7 +94,7 @@ void processBallValve()
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
-		byte state = ball_valve_state[id];
+		int state = ball_valve_state[id];
 		if (state == BALL_VALVE_FULLY_CLOSED || state == BALL_VALVE_FULLY_OPEN)
 			continue;
 
@@ -137,7 +137,7 @@ static void SetHBridge(byte id, char value)
 		if (value < 0)
 			digitalWrite(pinIn2, HIGH);
 
-	Serial.print(F("Ball valve #"));
+	Serial.print(F("HBridge #"));
 	Serial.print(id);
 	Serial.print(F(": "));
 	Serial.println((int)value);

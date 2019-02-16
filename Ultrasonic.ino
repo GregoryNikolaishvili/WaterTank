@@ -22,16 +22,6 @@ void initUltrasonicSensors()
 	state_clear_error_bit(ERR_ULTRASONIC_1 | ERR_ULTRASONIC_2 | ERR_ULTRASONIC_3);
 }
 
-void startMeasuringWaterLevel(byte sonarId)
-{
-	//Serial.print("Start measuring sensor #");
-	//Serial.println(sonarId + 1);
-
-	sonars[currentSonarId].timer_stop();
-	currentSonarId = sonarId;
-	sonars[sonarId].ping_timer(echoCheck);
-}
-
 // For echoCheck ISR
 volatile int isrSonarDistances[TANK_COUNT] = {
 	MAX_DISTANCE,
@@ -39,16 +29,27 @@ volatile int isrSonarDistances[TANK_COUNT] = {
 	MAX_DISTANCE
 };
 
+void startMeasuringWaterLevel(byte sonarId)
+{
+	//Serial.print("Start measuring sensor #");
+	//Serial.println(sonarId + 1);
+
+	sonars[currentSonarId].timer_stop();
+	currentSonarId = sonarId;
+	isrSonarDistances[sonarId] = MAX_DISTANCE;
+	sonars[sonarId].ping_timer(echoCheck);
+}
+
 int GetIsrSonarDistance(byte id)
 {
 	return isrSonarDistances[id];
 }
 
-// Isr method. Shold be very fast
+// Isr method. Should be very fast
 void echoCheck() {
 	if (sonars[currentSonarId].check_timer())
 	{
-		int  distance = sonars[currentSonarId].ping_result / US_ROUNDTRIP_CM;
+		int distance = sonars[currentSonarId].ping_result / US_ROUNDTRIP_CM;
 		if (distance < 0)
 			distance = MAX_DISTANCE;
 		isrSonarDistances[currentSonarId] = distance;
