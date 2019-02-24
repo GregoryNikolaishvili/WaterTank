@@ -116,7 +116,7 @@ void PublishTankState(byte id)
 	setHexInt16(buffer, ball_valve_state[id], 9);
 	setHexByte(buffer, ball_valve_state2[id], 13);
 
-	PublishMqtt(topic, buffer, 13, true);
+	PublishMqtt(topic, buffer, 15, true);
 }
 
 void PublishRelayState(byte id, bool value)
