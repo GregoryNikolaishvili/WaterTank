@@ -1,11 +1,10 @@
 byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
-IPAddress ip(192, 168, 2, 7);
-//IPAddress ip(192, 168, 1, 7);
+//IPAddress ip(192, 168, 2, 7);
+IPAddress ip(192, 168, 1, 7);
 
 EthernetClient ethClient;
-//PubSubClient mqttClient("192.168.1.23", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
-
-PubSubClient mqttClient("212.72.150.154", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
+PubSubClient mqttClient("192.168.1.23", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
+//PubSubClient mqttClient("212.72.150.154", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
 
 #define MQTT_BUFFER_SIZE 256
 

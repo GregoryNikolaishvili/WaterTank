@@ -246,3 +246,8 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+WaterTank.vcxproj
+.vs/WaterTank/v15/.suo
+__vm/.WaterTank.vsarduino.h
+__vm/Compile.vmps.xml
+__vm/Configuration.Release.vmps.xml
