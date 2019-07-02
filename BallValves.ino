@@ -23,15 +23,34 @@ void InitializeBallValves()
 		digitalWrite(hBridgePins[i], LOW);
 	}
 
-	Serial.println("Closing valves (5 sec)");
+	//////////////
+	//SetHBridge(0, -1); // Start closing
+	//delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
+	//SetHBridge(0, 0); // remove power from ball valves
+
+	//SetHBridge(0, 1); // Start closing
+	//delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
+	//SetHBridge(0, 0); // remove power from ball valves
+
+	//SetHBridge(0, -1); // Start closing
+	//delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
+	//SetHBridge(0, 0); // remove power from ball valves
+
+	//SetHBridge(0, 1); // Start closing
+	//delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
+	//SetHBridge(0, 0); // remove power from ball valves
+/////////
+
+
+	Serial.print(F("Closing valves ("));
+	Serial.print(BALL_VALVE_OPEN_CLOSE_SECONDS);
+	Serial.println(F("sec)"));
+
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
 		SetHBridge(id, -1); // Start closing
-
 		delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
-
 		SetHBridge(id, 0); // remove power from ball valves
-
 		ball_valve_state[id] = BALL_VALVE_FULLY_CLOSED;
 	}
 }
@@ -43,16 +62,27 @@ void setBallValve(byte id, bool value)
 
 	if (value > 0)
 	{
-		if ((prevOffSeconds[id] > 0) && (secondTicks < (prevOffSeconds[id] + BALL_VALVE_ON_DELAY_SEC))) // 5 min
+		if (secondTicks < (prevOffSeconds[id] + BALL_VALVE_ON_DELAY_SEC)) // 5 min
+		{
+			Serial.print("Delaying ball valve #");
+			Serial.print(id + 1);
+			Serial.print(" ON. Seconds left:");
+			Serial.println((prevOffSeconds[id] + BALL_VALVE_ON_DELAY_SEC) - secondTicks);
 			return;
+		}
 
 		// if water is on floor 
 		//	return false;
 
 		// if tank is full (at least one sensors)
 		if (isTankFull(id))
+		{
 			return;
+		}
 	}
+
+	//Serial.println("Ball valve state: ");
+	//Serial.println(ball_valve_state[id]);
 
 	// If open is requested and valve is closed (or closing) OR 
 	// if close is requested and valve is open (or opening)
@@ -73,9 +103,12 @@ void setBallValve(byte id, bool value)
 	}
 }
 
-void setBallValveSwitchState(byte id, bool valueOpen, bool valueClosed)
+void setBallValveSwitchState(byte id, bool openValue, bool closedValue)
 {
-	byte state = (valueOpen << 1 | valueClosed);
+	bool isOpen = !openValue;
+	bool isClosed = !closedValue;
+
+	byte state = (isOpen << 1 | isClosed);
 
 	if (ball_valve_state2[id] != state)
 	{

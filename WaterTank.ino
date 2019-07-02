@@ -13,6 +13,7 @@
 #include <Ethernet.h>
 #include <PubSubClient.h>			// https://github.com/knolleary/pubsubclient
 
+#include <MovingAverageFilter.h>
 #include <avr/wdt.h>
 
 unsigned long halfSecondTicks = 0;
@@ -284,32 +285,61 @@ void processTankWL(byte id)
 	int distance = GetIsrSonarDistance(id);
 
 	setUltrasoundSensorState(id, distance);
-	Serial.print("Ultrasonic: ");
-	Serial.print(id);
-	Serial.print(" = ");
-	Serial.println(distance);
+
+	//Serial.print("Ultrasonic: ");
+	//Serial.print(id);
+	//Serial.print(" = ");
+	//Serial.println(distance);
 
 	static unsigned long prevFullSeconds[] = { 0, 0, 0, 0 };
 
-	//TODO
-	boolean b1 = distance <= settings[id].MaxDistance;  // 07FFF = Error and should be considered as full & empty at the same time
+	//boolean err = distance == MAX_DISTANCE;
+	boolean b1 = distance <= settings[id].MinDistance;  // 07FFF = Error and should be considered as full & empty at the same time
 	boolean b2 = float_switch_states[id];
 
+	//Serial.print(F("Distance = "));
+	//Serial.print(distance);
+	//Serial.print(F(", Min = "));
+	//Serial.print(settings[id].MinDistance);
+	//Serial.print(F(", B1 = "));
+	//Serial.print(b1);
+	//Serial.print(F(", B2 = "));
+	//Serial.println(b2);
+
 	if (b1 && b2) // if both are on, turn off solenoid immediatley
+	{
 		setBallValve(id, false); // Close
-	else
-		if (b1 || b2) // if at least one is on 
-		{
-			if ((prevFullSeconds[id] > 0) && (secondTicks - prevFullSeconds[id]) >= BALL_VALVE_OFF_DELAY_SEC) // if 10 min passed since last time when at least one was on, turn off solenoid
-				setBallValve(id, false); // Close
-		}
+
+		if (prevFullSeconds[id] == 0)
+			prevFullSeconds[id] = secondTicks;
+		return;
+	}
 
 	if (b1 || b2) // if at least one is on 
 	{
+		if (prevFullSeconds[id] > 0)
+		{
+			if ((secondTicks - prevFullSeconds[id]) >= BALL_VALVE_OFF_DELAY_SEC) // if 10 min passed since last time when at least one was on, turn off solenoid
+			{
+				prevFullSeconds[id] = secondTicks;
+				setBallValve(id, false); // Close
+				return;
+			}
+
+			Serial.print("Delaying ball valve #");
+			Serial.print(id + 1);
+			Serial.print(" OFF. Seconds left:");
+			Serial.println((prevFullSeconds[id] + BALL_VALVE_OFF_DELAY_SEC) - secondTicks);
+			return;
+		}
+
+		//todo
 		if (prevFullSeconds[id] == 0)
 			prevFullSeconds[id] = secondTicks;
+		return;
 	}
-	else
+
+	if (distance >= (settings[id].MinDistance + 5)) // 5 cm delta
 	{
 		prevFullSeconds[id] = 0;
 		setBallValve(id, true); // Open
@@ -318,6 +348,8 @@ void processTankWL(byte id)
 
 void setFloatSwitchState(byte id, bool value)
 {
+	value = !value;
+
 	if (float_switch_states[id] != value)
 	{
 		float_switch_states[id] = value;
@@ -333,6 +365,6 @@ void setFloatSwitchState(byte id, bool value)
 
 bool isTankFull(byte id)
 {
-	return float_switch_states[id] || (ultrasound_sensor_distances[id] == MAX_DISTANCE) || 
-		(ultrasound_sensor_distances[id] <= settings[id].MaxDistance);
+	return float_switch_states[id] || (ultrasound_sensor_distances[id] == MAX_DISTANCE) ||
+		(ultrasound_sensor_distances[id] <= settings[id].MinDistance);
 }

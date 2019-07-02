@@ -29,6 +29,13 @@ volatile int isrSonarDistances[TANK_COUNT] = {
 	MAX_DISTANCE
 };
 
+MovingAverageFilter sonarDistancesAvg[TANK_COUNT] =
+{
+	MovingAverageFilter(10, MAX_DISTANCE),
+	MovingAverageFilter(10, MAX_DISTANCE),
+	MovingAverageFilter(10, MAX_DISTANCE)
+};
+
 void startMeasuringWaterLevel(byte sonarId)
 {
 	//Serial.print("Start measuring sensor #");
@@ -58,22 +65,31 @@ void echoCheck() {
 
 void setUltrasoundSensorState(byte id, int value)
 {
-	if (ultrasound_sensor_distances[id] != value)
+	int output = sonarDistancesAvg[id].process(value);
+
+	//Serial.print(F("Ultrasonic #"));
+	//Serial.print(id + 1);
+	//Serial.print(F(" = "));
+	//Serial.print(value);
+	//Serial.print(F(", AVG = "));
+	//Serial.println(output);
+
+	if (ultrasound_sensor_distances[id] != output)
 	{
-		ultrasound_sensor_distances[id] = value;
-		if (value >= 0 && value != MAX_DISTANCE)
+		ultrasound_sensor_distances[id] = output;
+		if (output >= 0 && output != MAX_DISTANCE)
 			state_clear_error_bit(1 << (id + 1));
 		else
 			state_set_error_bit(1 << (id + 1));
 
-		setWaterLevelPercent(id, value);
+		setWaterLevelPercent(id, output);
 
 		PublishTankState(id);
 
 		//Serial.print(F("Ultrasonic #"));
 		//Serial.print(id + 1);
 		//Serial.print(F(" = "));
-		//Serial.print(value);
+		//Serial.print(output);
 		//Serial.print(F(" cm, "));
 		//Serial.print(ultrasound_sensor_percents[id]);
 		//Serial.println(F("%"));
@@ -101,7 +117,7 @@ void recalcWaterLevelPercents()
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
-		setWaterLevelPercent(id, ultrasound_sensor_distances[id]);
+		setWaterLevelPercent(id, getUltrasoundSensorState(id));
 
 		PublishTankState(id);
 	}

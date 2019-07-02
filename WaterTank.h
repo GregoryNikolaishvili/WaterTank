@@ -2,7 +2,7 @@
 #include <TimeLib.h>					// http://www.pjrc.com/teensy/td_libs_Time.html
 
 
-#define SIMULATION_MODE
+//#define SIMULATION_MODE
 
 static const byte RELAY_COUNT = 5;
 
@@ -26,7 +26,7 @@ static const unsigned int ERR_ULTRASONIC_3 = 8;
 
 #define state_is_error_bit_set(__mask__) ((waterLevelControllerState & (__mask__)) != 0)
 
-static const byte BALL_VALVE_OPEN_CLOSE_SECONDS = 5;
+static const byte BALL_VALVE_OPEN_CLOSE_SECONDS = 10;
 
 static const uint8_t PIN_FLOAT_SWITCH_1 = 8;
 static const uint8_t PIN_ULTRASONIC_1_TX = 2;
@@ -40,14 +40,17 @@ static const uint8_t PIN_FLOAT_SWITCH_3 = 10;
 static const uint8_t PIN_ULTRASONIC_3_TX = 6;
 static const uint8_t PIN_ULTRASONIC_3_RX = 7;
 
-static const uint8_t PIN_HBRIDGE1_IN1 = 22;
-static const uint8_t PIN_HBRIDGE1_IN2 = 24;
-static const uint8_t PIN_HBRIDGE2_IN1 = 26;
-static const uint8_t PIN_HBRIDGE2_IN2 = 28;
-static const uint8_t PIN_HBRIDGE3_IN1 = 30;
-static const uint8_t PIN_HBRIDGE3_IN2 = 32;
-static const uint8_t PIN_HBRIDGE4_IN1 = 34;
-static const uint8_t PIN_HBRIDGE4_IN2 = 36;
+static const uint8_t PIN_HBRIDGE1_IN1 = 32; //ok
+static const uint8_t PIN_HBRIDGE1_IN2 = 30; //ok
+
+static const uint8_t PIN_HBRIDGE2_IN1 = 34; //ok
+static const uint8_t PIN_HBRIDGE2_IN2 = 36; //ok
+
+static const uint8_t PIN_HBRIDGE3_IN1 = 26; //ok
+static const uint8_t PIN_HBRIDGE3_IN2 = 28; //ok
+
+static const uint8_t PIN_HBRIDGE4_IN1 = 22;
+static const uint8_t PIN_HBRIDGE4_IN2 = 24;
 
 static const uint8_t PIN_BALL_VALVE1_OPEN = 38;
 static const uint8_t PIN_BALL_VALVE1_CLOSED = 39;
@@ -68,8 +71,8 @@ const byte PIN_BLINKING_LED = LED_BUILTIN; // 13 in MEGA
 const int BALL_VALVE_ON_DELAY_SEC = 300;
 const int BALL_VALVE_OFF_DELAY_SEC = 600;
 #else
-const int BALL_VALVE_ON_DELAY_SEC = 10;
-const int BALL_VALVE_OFF_DELAY_SEC = 15;
+const int BALL_VALVE_ON_DELAY_SEC = 20;
+const int BALL_VALVE_OFF_DELAY_SEC = 30;
 #endif
 
 
