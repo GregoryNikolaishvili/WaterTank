@@ -2,7 +2,7 @@ static const int BALL_VALVE_FULLY_CLOSED = -0xFF;
 static const int BALL_VALVE_FULLY_OPEN = 0xFF;
 
 static int ball_valve_state[TANK_COUNT];
-static byte ball_valve_state2[TANK_COUNT];
+static byte ball_valve_switch_state[TANK_COUNT];
 
 static byte hBridgePins[2 * HBRIDGE_COUNT] = {
 	PIN_HBRIDGE1_IN1,
@@ -17,6 +17,15 @@ static byte hBridgePins[2 * HBRIDGE_COUNT] = {
 
 void InitializeBallValves()
 {
+	for (byte id = 0; id < TANK_COUNT; id++)
+	{
+		ball_valve_switch_state[id] = '\0';
+	}
+
+	setBallValveSwitchState(0, bouncerBV1Open.read(), bouncerBV1Close.read());
+	setBallValveSwitchState(1, bouncerBV2Open.read(), bouncerBV2Close.read());
+	setBallValveSwitchState(2, bouncerBV3Open.read(), bouncerBV3Close.read());
+
 	for (byte i = 0; i < 2 * HBRIDGE_COUNT; i++)
 	{
 		pinMode(hBridgePins[i], OUTPUT);
@@ -42,16 +51,18 @@ void InitializeBallValves()
 /////////
 
 
-	Serial.print(F("Closing valves ("));
-	Serial.print(BALL_VALVE_OPEN_CLOSE_SECONDS);
-	Serial.println(F("sec)"));
-
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
-		SetHBridge(id, -1); // Start closing
-		delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
-		SetHBridge(id, 0); // remove power from ball valves
-		ball_valve_state[id] = BALL_VALVE_FULLY_CLOSED;
+		Serial.print(F("Closing valve #"));
+		Serial.println(id + 1);
+		if (ball_valve_switch_state[id] != 'C')
+		{
+			SetHBridge(id, -1); // Start closing
+			delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
+			SetHBridge(id, 0); // remove power from ball valves
+			ball_valve_state[id] = BALL_VALVE_FULLY_CLOSED;
+		}
+		Serial.println(F("Closed"));
 	}
 }
 
@@ -108,11 +119,19 @@ void setBallValveSwitchState(byte id, bool openValue, bool closedValue)
 	bool isOpen = !openValue;
 	bool isClosed = !closedValue;
 
-	byte state = (isOpen << 1 | isClosed);
-
-	if (ball_valve_state2[id] != state)
+	byte state;
+	if (isOpen)
 	{
-		ball_valve_state2[id] = state;
+		state = isClosed ? 'B' : 'O';
+	}
+	else
+	{
+		state = isClosed ? 'C' : '?';
+	}
+
+	if (ball_valve_switch_state[id] != state)
+	{
+		ball_valve_switch_state[id] = state;
 
 		PublishTankState(id);
 

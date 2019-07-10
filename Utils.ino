@@ -19,6 +19,12 @@ int setHexByte(char *buffer, byte x, int idx)
   return idx;
 }
 
+int setHex4Bits(char *buffer, byte x, int idx)
+{
+	buffer[idx++] = byteToHexChar(x & 0x0F);
+	return idx;
+}
+
 int setHexInt16(char *buffer, int x, int idx)
 {
   idx = setHexByte(buffer, x >> 8, idx);

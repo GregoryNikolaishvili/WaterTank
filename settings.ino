@@ -1,15 +1,15 @@
-const byte DEF_SETTINGS_VERSION = 0x00;
+const byte DEF_SETTINGS_VERSION = 0x01;
 const int STORAGE_ADDRESS_SETTINGS = 0;
 
 extern SettingStructure settings[TANK_COUNT];
 
 void readSettings()
 {
-	settings[0].MaxDistance = 220;
+	settings[0].MaxDistance = 150;
 	settings[0].MinDistance = 20;
-	settings[1].MaxDistance = 220;
+	settings[1].MaxDistance = 160;
 	settings[1].MinDistance = 20;
-	settings[2].MaxDistance = 220;
+	settings[2].MaxDistance = 160;
 	settings[2].MinDistance = 20;
 
 	byte v = eeprom_read_byte((uint8_t *)STORAGE_ADDRESS_SETTINGS);

@@ -113,9 +113,9 @@ void PublishTankState(byte id)
 	setHexInt16(buffer, ultrasound_sensor_percents[id], 4);
 	buffer[8] = float_switch_states[id] ? '1' : '0';
 	setHexInt16(buffer, ball_valve_state[id], 9);
-	setHexByte(buffer, ball_valve_state2[id], 13);
+	buffer[13] = ball_valve_switch_state[id];
 
-	PublishMqtt(topic, buffer, 15, true);
+	PublishMqtt(topic, buffer, 14, true);
 }
 
 void PublishRelayState(byte id, bool value)
@@ -217,6 +217,4 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		}
 		return;
 	}
-
-
 }

@@ -55,7 +55,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 0.0.5"));
+	Serial.println(F("Initializing.. ver. 1.0.1"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -76,16 +76,16 @@ void setup()
 		ultrasound_sensor_distances[id] = MAX_DISTANCE;
 	}
 
-	pinMode(PIN_FLOAT_SWITCH_1, INPUT_PULLUP);
-	pinMode(PIN_FLOAT_SWITCH_2, INPUT_PULLUP);
-	pinMode(PIN_FLOAT_SWITCH_3, INPUT_PULLUP);
+	//pinMode(PIN_FLOAT_SWITCH_1, INPUT_PULLUP);
+	//pinMode(PIN_FLOAT_SWITCH_2, INPUT_PULLUP);
+	//pinMode(PIN_FLOAT_SWITCH_3, INPUT_PULLUP);
 
-	pinMode(PIN_BALL_VALVE1_OPEN, INPUT_PULLUP);
-	pinMode(PIN_BALL_VALVE1_CLOSED, INPUT_PULLUP);
-	pinMode(PIN_BALL_VALVE2_OPEN, INPUT_PULLUP);
-	pinMode(PIN_BALL_VALVE2_CLOSED, INPUT_PULLUP);
-	pinMode(PIN_BALL_VALVE3_OPEN, INPUT_PULLUP);
-	pinMode(PIN_BALL_VALVE3_CLOSED, INPUT_PULLUP);
+	//pinMode(PIN_BALL_VALVE1_OPEN, INPUT_PULLUP);
+	//pinMode(PIN_BALL_VALVE1_CLOSED, INPUT_PULLUP);
+	//pinMode(PIN_BALL_VALVE2_OPEN, INPUT_PULLUP);
+	//pinMode(PIN_BALL_VALVE2_CLOSED, INPUT_PULLUP);
+	//pinMode(PIN_BALL_VALVE3_OPEN, INPUT_PULLUP);
+	//pinMode(PIN_BALL_VALVE3_CLOSED, INPUT_PULLUP);
 
 	InitializeBallValves();
 
@@ -95,8 +95,6 @@ void setup()
 
 	InitEthernet();
 
-	InitMqtt();
-
 	startMeasuringWaterLevel(0);
 	delay(500);
 	startMeasuringWaterLevel(1);
@@ -105,6 +103,8 @@ void setup()
 	delay(500);
 
 	processWaterLevels(); // duplicate. same is in loop
+
+	InitMqtt();
 
 	wdt_enable(WDTO_8S);
 
@@ -142,14 +142,22 @@ void oncePerHalfSecond(void)
 	blinkingLedState = !blinkingLedState;
 	digitalWrite(PIN_BLINKING_LED, blinkingLedState);
 
-	if ((halfSecondTicks + 3) % 10 == 0) // 1.5 second before processing water levels
+	processBallValveSwitches();
+
+	if ((halfSecondTicks + 3) % PROCESS_INTERVAL_WATER_LEVEL_HALF_SEC == 0) // 1.5 second before processing water levels
 		startMeasuringWaterLevel(0);
 	else
-		if ((halfSecondTicks + 2) % 10 == 0) // 1 second before processing water levels
+		if ((halfSecondTicks + 2) % PROCESS_INTERVAL_WATER_LEVEL_HALF_SEC == 0) // 1 second before processing water levels
 			startMeasuringWaterLevel(1);
 		else
-			if ((halfSecondTicks + 1) % 10 == 0) // 0.5 second before processing water levels
+			if ((halfSecondTicks + 1) % PROCESS_INTERVAL_WATER_LEVEL_HALF_SEC == 0) // 0.5 second before processing water levels
 				startMeasuringWaterLevel(2);
+
+	if (halfSecondTicks % PROCESS_INTERVAL_WATER_LEVEL_HALF_SEC == 0)
+	{
+		processWaterLevels();
+	}
+
 
 	if ((halfSecondTicks % 2) == 0)
 		oncePerSecond();
@@ -170,8 +178,6 @@ void oncePerSecond()
 
 void oncePer5Second()
 {
-	processWaterLevels();
-
 	ReconnectMqtt();
 }
 
@@ -253,27 +259,31 @@ boolean state_clear_error_bit(int mask)
 	return false;
 }
 
+void processFloatSwitches()
+{
+	if (bouncerWL1.update())
+		setFloatSwitchState(0, bouncerWL1.read());
+	if (bouncerWL2.update())
+		setFloatSwitchState(1, bouncerWL2.read());
+	if (bouncerWL3.update())
+		setFloatSwitchState(2, bouncerWL3.read());
+}
+
+void processBallValveSwitches()
+{
+	if (bouncerBV1Open.update() || bouncerBV1Close.update())
+		setBallValveSwitchState(0, bouncerBV1Open.read(), bouncerBV1Close.read());
+	if (bouncerBV2Open.update() || bouncerBV2Close.update())
+		setBallValveSwitchState(1, bouncerBV2Open.read(), bouncerBV2Close.read());
+	if (bouncerBV3Open.update() || bouncerBV3Close.update())
+		setBallValveSwitchState(2, bouncerBV3Open.read(), bouncerBV3Close.read());
+}
+
 // called every 5 second
 void processWaterLevels()
 {
-	bouncerWL1.update();
-	bouncerWL2.update();
-	bouncerWL3.update();
-
-	bouncerBV1Open.update();
-	bouncerBV1Close.update();
-	bouncerBV2Open.update();
-	bouncerBV2Close.update();
-	bouncerBV3Open.update();
-	bouncerBV3Close.update();
-
-	setFloatSwitchState(0, bouncerWL1.read());
-	setFloatSwitchState(1, bouncerWL2.read());
-	setFloatSwitchState(2, bouncerWL3.read());
-
-	setBallValveSwitchState(0, bouncerBV1Open.read(), bouncerBV1Close.read());
-	setBallValveSwitchState(1, bouncerBV2Open.read(), bouncerBV2Close.read());
-	setBallValveSwitchState(2, bouncerBV3Open.read(), bouncerBV3Close.read());
+	processBallValveSwitches();
+	processFloatSwitches();
 
 	//processUltrasonicSensors();
 	for (byte id = 0; id < TANK_COUNT; id++)

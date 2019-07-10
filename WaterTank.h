@@ -4,6 +4,8 @@
 
 //#define SIMULATION_MODE
 
+#define PROCESS_INTERVAL_WATER_LEVEL_HALF_SEC 60
+
 static const byte RELAY_COUNT = 5;
 
 static const byte TANK_COUNT = 3;
