@@ -21,9 +21,9 @@ unsigned long secondTicks = 0;
 
 unsigned int waterLevelControllerState = 0;
 
-Bounce bouncerWL1(PIN_FLOAT_SWITCH_1, false, 10 * 1000UL, 10 * 1000UL); // 10 sec, 10 sec
-Bounce bouncerWL2(PIN_FLOAT_SWITCH_2, false, 10 * 1000UL, 10 * 1000UL); // 10 sec, 10 sec
-Bounce bouncerWL3(PIN_FLOAT_SWITCH_3, false, 10 * 1000UL, 10 * 1000UL); // 10 sec, 10 sec
+Bounce floatSwitch1(PIN_FLOAT_SWITCH_1, false, 60 * 1000UL, 60 * 1000UL); // 60 sec, 60 sec
+Bounce floatSwitch2(PIN_FLOAT_SWITCH_2, false, 60 * 1000UL, 60 * 1000UL); // 60 sec, 60 sec
+Bounce floatSwitch3(PIN_FLOAT_SWITCH_3, false, 60 * 1000UL, 60 * 1000UL); // 60 sec, 60 sec
 
 Bounce bouncerBV1Open(PIN_BALL_VALVE1_OPEN, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
 Bounce bouncerBV1Close(PIN_BALL_VALVE1_CLOSED, false, 500UL, 500UL); // 0.5 sec, 0.5 sec
@@ -87,6 +87,7 @@ void setup()
 	//pinMode(PIN_BALL_VALVE3_OPEN, INPUT_PULLUP);
 	//pinMode(PIN_BALL_VALVE3_CLOSED, INPUT_PULLUP);
 
+	InitializeFloatSwitches();
 	InitializeBallValves();
 
 	readSettings();
@@ -261,12 +262,12 @@ boolean state_clear_error_bit(int mask)
 
 void processFloatSwitches()
 {
-	if (bouncerWL1.update())
-		setFloatSwitchState(0, bouncerWL1.read());
-	if (bouncerWL2.update())
-		setFloatSwitchState(1, bouncerWL2.read());
-	if (bouncerWL3.update())
-		setFloatSwitchState(2, bouncerWL3.read());
+	if (floatSwitch1.update())
+		setFloatSwitchState(0, floatSwitch1.read());
+	if (floatSwitch2.update())
+		setFloatSwitchState(1, floatSwitch2.read());
+	if (floatSwitch3.update())
+		setFloatSwitchState(2, floatSwitch3.read());
 }
 
 void processBallValveSwitches()
@@ -358,7 +359,7 @@ void processTankWL(byte id)
 
 void setFloatSwitchState(byte id, bool value)
 {
-	value = !value;
+	//value = !value;
 
 	if (float_switch_states[id] != value)
 	{

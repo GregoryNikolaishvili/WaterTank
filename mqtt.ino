@@ -99,6 +99,9 @@ void PublishAllStates(bool isInitialState)
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
 		PublishTankState(id);
+
+	for (byte id = 0; id < RELAY_COUNT; id++)
+		PublishRelayState(id, isRelayOn(id));
 }
 
 void PublishTankState(byte id)
@@ -157,6 +160,20 @@ void callback(char* topic, byte * payload, unsigned int len) {
 
 	if (len == 0)
 		return;
+
+
+	if (strncmp(topic, "chac/wl/state/", 14) == 0)
+	{
+		byte id = hexCharToByte(topic[14]);
+		bool value = payload[0] != '0';
+		//Serial.print("id=");
+		//Serial.print(id);
+		//Serial.print(", value=");
+		//Serial.println(value);
+
+		relaySet(id, value);
+		return;
+	}
 
 	if (strcmp(topic, "chac/wl/refresh") == 0)
 	{

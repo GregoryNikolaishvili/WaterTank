@@ -15,6 +15,14 @@ static byte hBridgePins[2 * HBRIDGE_COUNT] = {
 	PIN_HBRIDGE4_IN2
 };
 
+void InitializeFloatSwitches()
+{
+	for (byte id = 0; id < TANK_COUNT; id++)
+	{
+		float_switch_states[id] = floatSwitch1.read();
+	}
+}
+
 void InitializeBallValves()
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
