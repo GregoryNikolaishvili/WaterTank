@@ -55,7 +55,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 1.0.1"));
+	Serial.println(F("Initializing.. ver. 1.0.2"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -72,7 +72,6 @@ void setup()
 
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
-		float_switch_states[id] = true;
 		ultrasound_sensor_distances[id] = MAX_DISTANCE;
 	}
 
@@ -308,7 +307,9 @@ void processTankWL(byte id)
 	boolean b1 = distance <= settings[id].MinDistance;  // 07FFF = Error and should be considered as full & empty at the same time
 	boolean b2 = float_switch_states[id];
 
-	//Serial.print(F("Distance = "));
+	//Serial.print(F("Id = "));
+	//Serial.print(id);
+	//Serial.print(F(", Distance = "));
 	//Serial.print(distance);
 	//Serial.print(F(", Min = "));
 	//Serial.print(settings[id].MinDistance);
@@ -337,9 +338,9 @@ void processTankWL(byte id)
 				return;
 			}
 
-			Serial.print("Delaying ball valve #");
+			Serial.print(F("Delaying ball valve #"));
 			Serial.print(id + 1);
-			Serial.print(" OFF. Seconds left:");
+			Serial.print(F(" OFF. Seconds left:"));
 			Serial.println((prevFullSeconds[id] + BALL_VALVE_OFF_DELAY_SEC) - secondTicks);
 			return;
 		}
@@ -359,7 +360,7 @@ void processTankWL(byte id)
 
 void setFloatSwitchState(byte id, bool value)
 {
-	//value = !value;
+	value = !value;
 
 	if (float_switch_states[id] != value)
 	{
