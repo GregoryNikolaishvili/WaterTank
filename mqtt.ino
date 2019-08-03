@@ -220,7 +220,7 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		return;
 	}
 
-	if (strcmp(topic, "chac/wc/settings/names") == 0)
+	if (strcmp(topic, "chac/wl/settings/names") == 0)
 	{
 		saveData(payload, len);
 
