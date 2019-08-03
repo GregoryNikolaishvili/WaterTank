@@ -55,7 +55,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 1.0.2"));
+	Serial.println(F("Initializing.. ver. 1.0.4"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -188,6 +188,14 @@ void oncePer1Minute()
 		PublishAllStates(false);
 }
 
+bool InvertRelayState(byte id, bool state)
+{
+	if (id == 1 || id == 2)
+		return !state;
+
+	return state;
+}
+
 void relaySet(byte id, bool state)
 {
 	if (state)
@@ -200,7 +208,7 @@ void relayOn(byte id)
 {
 	if (id < RELAY_COUNT)
 	{
-		digitalWrite(relayPins[id], LOW);
+		digitalWrite(relayPins[id], InvertRelayState(id, LOW));
 		PublishRelayState(id, true);
 	}
 }
@@ -209,27 +217,15 @@ void relayOff(byte id)
 {
 	if (id < RELAY_COUNT)
 	{
-		digitalWrite(relayPins[id], HIGH);
+		digitalWrite(relayPins[id], InvertRelayState(id, HIGH));
 		PublishRelayState(id, false);
 	}
-}
-
-bool relayToggle(byte id)
-{
-	bool newState = false;
-	if (id < RELAY_COUNT)
-	{
-		newState = digitalRead(relayPins[id]);
-		digitalWrite(relayPins[id], !newState);
-		PublishRelayState(id, newState);
-	}
-	return newState;
 }
 
 bool isRelayOn(byte id)
 {
 	if (id < RELAY_COUNT)
-		return !digitalRead(relayPins[id]);
+		return InvertRelayState(id, !digitalRead(relayPins[id]));
 	return false;
 }
 

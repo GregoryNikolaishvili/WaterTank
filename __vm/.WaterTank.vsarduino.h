@@ -79,9 +79,9 @@ typedef void *__builtin_va_list;
 
 #include "WaterTank.ino"
 #include "BallValves.ino"
+#include "Settings.ino"
 #include "Ultrasonic.ino"
 #include "Utils.ino"
 #include "mqtt.ino"
-#include "settings.ino"
 #endif
 #endif

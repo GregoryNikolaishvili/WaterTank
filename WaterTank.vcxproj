@@ -82,7 +82,7 @@
     <None Include="mqtt.ino">
       <FileType>CppCode</FileType>
     </None>
-    <None Include="settings.ino">
+    <None Include="Settings.ino">
       <FileType>CppCode</FileType>
     </None>
     <None Include="BallValves.ino">

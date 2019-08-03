@@ -78,6 +78,7 @@ void ReconnectMqtt() {
 
 			PublishControllerState();
 			PublishSettings();
+			PublishNamesAndOrder();
 			PublishAllStates(true);
 		}
 		else {
@@ -147,6 +148,26 @@ void PublishSettings()
 	PublishMqtt(topic, buffer, idx, true);
 }
 
+void PublishNamesAndOrder()
+{
+	if (!mqttClient.connected()) return;
+
+	const char* topic = "cha/wl/names";
+
+	int length = eeprom_read_word((uint16_t *)STORAGE_ADDRESS_DATA);
+	Serial.print("load name & order data. len=");
+	Serial.println(length);
+
+	for (int i = 0; i < length; i++)
+	{
+		byte b = eeprom_read_byte((uint8_t *)(STORAGE_ADDRESS_DATA + 2 + i));
+		buffer[i] = b;
+	}
+
+	PublishMqtt(topic, buffer, length, true);
+}
+
+
 
 void callback(char* topic, byte * payload, unsigned int len) {
 
@@ -196,6 +217,14 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		}
 
 		saveSettings(true);
+		return;
+	}
+
+	if (strcmp(topic, "chac/wc/settings/names") == 0)
+	{
+		saveData(payload, len);
+
+		PublishNamesAndOrder();
 		return;
 	}
 
