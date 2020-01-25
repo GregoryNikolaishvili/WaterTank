@@ -196,6 +196,22 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		return;
 	}
 
+	if (strncmp(topic, "chac/wl/ballvalve/", 18) == 0)
+	{
+		byte id = hexCharToByte(topic[18]);
+		bool value = payload[0] != '0';
+		//Serial.print("id=");
+		//Serial.print(id);
+		//Serial.print(", value=");
+		//Serial.println(value);
+
+		if (value)
+			openBallValve(id);
+		else
+			closeBallValve(id);
+		return;
+	}
+
 	if (strcmp(topic, "chac/wl/refresh") == 0)
 	{
 		PublishAllStates(false);

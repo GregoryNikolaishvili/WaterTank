@@ -77,7 +77,7 @@ void InitializeBallValves()
 void setBallValve(byte id, bool value)
 {
 	static unsigned long prevOffSeconds[TANK_COUNT] = { 0, 0, 0 };
-	
+
 	if (value > 0)
 	{
 		if (secondTicks < (prevOffSeconds[id] + BALL_VALVE_ON_DELAY_SEC)) // 5 min
@@ -105,17 +105,28 @@ void setBallValve(byte id, bool value)
 	{
 		if (value)
 		{
-			ball_valve_state[id] = BALL_VALVE_OPEN_CLOSE_SECONDS;
-			SetHBridge(id, 1); // Positive, start opening
+			openBallValve(id);
 		}
 		else
 		{
 			prevOffSeconds[id] = secondTicks;
-			ball_valve_state[id] = -BALL_VALVE_OPEN_CLOSE_SECONDS;
-			SetHBridge(id, -1); // Negative, start closing
+			closeBallValve(id);
 		}
-		PublishTankState(id);
 	}
+}
+
+void closeBallValve(byte id)
+{
+	ball_valve_state[id] = -BALL_VALVE_OPEN_CLOSE_SECONDS;
+	SetHBridge(id, -1); // Negative, start closing
+	PublishTankState(id);
+}
+
+void openBallValve(byte id)
+{
+	ball_valve_state[id] = BALL_VALVE_OPEN_CLOSE_SECONDS;
+	SetHBridge(id, 1); // Positive, start opening
+	PublishTankState(id);
 }
 
 void setBallValveSwitchState(byte id, bool openValue, bool closedValue)
