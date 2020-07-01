@@ -21,12 +21,12 @@ static const int MAX_DISTANCE = 0x7FFF;
 //const unsigned char ULTRASOUND_SENSOR_2 = 1;
 //const unsigned char ULTRASOUND_SENSOR_3 = 2;
 
-static const unsigned int ERR_GENERAL = 1;
-static const unsigned int ERR_ULTRASONIC_1 = 2;
-static const unsigned int ERR_ULTRASONIC_2 = 4;
-static const unsigned int ERR_ULTRASONIC_3 = 8;
+//static const unsigned int ERR_GENERAL = 1;
+//static const unsigned int ERR_ULTRASONIC_1 = 2;
+//static const unsigned int ERR_ULTRASONIC_2 = 4;
+//static const unsigned int ERR_ULTRASONIC_3 = 8;
 
-#define state_is_error_bit_set(__mask__) ((waterLevelControllerState & (__mask__)) != 0)
+//#define state_is_error_bit_set(__mask__) ((waterLevelControllerState & (__mask__)) != 0)
 
 static const byte BALL_VALVE_OPEN_CLOSE_SECONDS = 10;
 

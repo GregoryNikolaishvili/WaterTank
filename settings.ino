@@ -1,6 +1,6 @@
 const byte DEF_SETTINGS_VERSION = 0x02;
 const int STORAGE_ADDRESS_SETTINGS = 0;
-const int STORAGE_ADDRESS_DATA = 100;
+//const int STORAGE_ADDRESS_DATA = 100;
 
 
 extern SettingStructure settings[TANK_COUNT];
@@ -20,7 +20,7 @@ void readSettings()
 		eeprom_update_byte((uint8_t *)STORAGE_ADDRESS_SETTINGS, DEF_SETTINGS_VERSION);
 		saveSettings(false);
 
-		saveData("000C0;1;2;3;4;5;", 16);
+		//saveData("000C0;1;2;3;4;5;", 16);
 	}
 	else
 	{
@@ -44,11 +44,11 @@ void settingsChanged(bool publish)
 		PublishSettings();
 }
 
-void saveData(const void* data, int length)
-{
-	if (length > 256)
-		length = 256;
-
-	eeprom_update_word((uint16_t *)STORAGE_ADDRESS_DATA, length);
-	eeprom_update_block(data, (void*)(STORAGE_ADDRESS_DATA + 2), length);
-}
+//void saveData(const void* data, int length)
+//{
+//	if (length > 256)
+//		length = 256;
+//
+//	eeprom_update_word((uint16_t *)STORAGE_ADDRESS_DATA, length);
+//	eeprom_update_block(data, (void*)(STORAGE_ADDRESS_DATA + 2), length);
+//}

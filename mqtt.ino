@@ -49,11 +49,11 @@ void PublishMqtt(const char* topic, const char* message, int len, boolean retain
 	mqttClient.publish(topic, (byte*)message, len, retained);
 }
 
-void PublishMqttAlive(const char* topic)
-{
-	setHexInt32(buffer, now(), 0);
-	PublishMqtt(topic, buffer, 8, false);
-}
+//void PublishMqttAlive(const char* topic)
+//{
+//	setHexInt32(buffer, now(), 0);
+//	PublishMqtt(topic, buffer, 8, false);
+//}
 
 
 void ReconnectMqtt() {
@@ -64,21 +64,21 @@ void ReconnectMqtt() {
 		Serial.print(F("Connecting to MQTT broker..."));
 
 		// Attempt to connect
-		if (mqttClient.connect("WL controller", "cha/sys/WL controller", 1, true, "disconnected")) {
+		if (mqttClient.connect("water_tank", "hub/controller/water_tank", 1, true, "{\"state\":\"disconnected\"}")) {
 
 			Serial.println(F("connected"));
 
 			// Once connected, publish an announcement...
-			mqttClient.publish("cha/sys/WL controller", "connected", true);  // Publish ethernet connected status to MQTT topic
+			mqttClient.publish("hub/controller/water_tank", "{\"state\":\"disconnected\"}", true);  // Publish ethernet connected status to MQTT topic
 
 			// ... and resubscribe
 			mqttClient.subscribe("chac/wl/#", 1);     // Subscribe to a MQTT topic, qos = 1
 
-			mqttClient.publish("cha/hub/gettime", "chac/wl/settime");     // request time
+			mqttClient.publish("hubcommand/gettime", "chac/wl/settime");     // request time
 
-			PublishControllerState();
+			//PublishControllerState();
 			PublishSettings();
-			PublishNamesAndOrder();
+			//PublishNamesAndOrder();
 			PublishAllStates(true);
 		}
 		else {
@@ -88,13 +88,13 @@ void ReconnectMqtt() {
 	}
 }
 
-void PublishControllerState()
-{
-	if (!mqttClient.connected()) return;
-
-	setHexInt16(buffer, waterLevelControllerState, 0);
-	PublishMqtt("cha/wl/state", buffer, 4, true);
-}
+//void PublishControllerState()
+//{
+//	if (!mqttClient.connected()) return;
+//
+//	setHexInt16(buffer, waterLevelControllerState, 0);
+//	PublishMqtt("cha/wl/state", buffer, 4, true);
+//}
 
 void PublishAllStates(bool isInitialState)
 {
@@ -118,7 +118,7 @@ void PublishTankState(byte id)
 	buffer[8] = float_switch_states[id] ? '1' : '0';
 	setHexInt16(buffer, ball_valve_state[id], 9);
 	buffer[13] = ball_valve_switch_state[id];
-
+	
 	PublishMqtt(topic, buffer, 14, true);
 }
 
@@ -148,24 +148,24 @@ void PublishSettings()
 	PublishMqtt(topic, buffer, idx, true);
 }
 
-void PublishNamesAndOrder()
-{
-	if (!mqttClient.connected()) return;
-
-	const char* topic = "cha/wl/names";
-
-	int length = eeprom_read_word((uint16_t *)STORAGE_ADDRESS_DATA);
-	Serial.print("load name & order data. len=");
-	Serial.println(length);
-
-	for (int i = 0; i < length; i++)
-	{
-		byte b = eeprom_read_byte((uint8_t *)(STORAGE_ADDRESS_DATA + 2 + i));
-		buffer[i] = b;
-	}
-
-	PublishMqtt(topic, buffer, length, true);
-}
+//void PublishNamesAndOrder()
+//{
+//	if (!mqttClient.connected()) return;
+//
+//	const char* topic = "cha/wl/names";
+//
+//	int length = eeprom_read_word((uint16_t *)STORAGE_ADDRESS_DATA);
+//	Serial.print("load name & order data. len=");
+//	Serial.println(length);
+//
+//	for (int i = 0; i < length; i++)
+//	{
+//		byte b = eeprom_read_byte((uint8_t *)(STORAGE_ADDRESS_DATA + 2 + i));
+//		buffer[i] = b;
+//	}
+//
+//	PublishMqtt(topic, buffer, length, true);
+//}
 
 
 
@@ -215,11 +215,10 @@ void callback(char* topic, byte * payload, unsigned int len) {
 	if (strcmp(topic, "chac/wl/refresh") == 0)
 	{
 		PublishAllStates(false);
-		PublishMqttAlive("cha/wl/alive");
+		//PublishMqttAlive("cha/wl/alive");
 
 		return;
 	}
-
 
 	if (strcmp(topic, "chac/wl/settings") == 0)
 	{
@@ -236,13 +235,13 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		return;
 	}
 
-	if (strcmp(topic, "chac/wl/settings/names") == 0)
-	{
-		saveData(payload, len);
+	//if (strcmp(topic, "chac/wl/settings/names") == 0)
+	//{
+	//	saveData(payload, len);
 
-		PublishNamesAndOrder();
-		return;
-	}
+	//	PublishNamesAndOrder();
+	//	return;
+	//}
 
 	if (strcmp(topic, "chac/wl/settime") == 0)
 	{

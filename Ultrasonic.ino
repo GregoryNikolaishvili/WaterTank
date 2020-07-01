@@ -19,7 +19,7 @@ extern SettingStructure settings[TANK_COUNT];
 
 void initUltrasonicSensors()
 {
-	state_clear_error_bit(ERR_ULTRASONIC_1 | ERR_ULTRASONIC_2 | ERR_ULTRASONIC_3);
+	//state_clear_error_bit(ERR_ULTRASONIC_1 | ERR_ULTRASONIC_2 | ERR_ULTRASONIC_3);
 }
 
 // For echoCheck ISR
@@ -77,10 +77,6 @@ void setUltrasoundSensorState(byte id, int value)
 	if (ultrasound_sensor_distances[id] != output)
 	{
 		ultrasound_sensor_distances[id] = output;
-		if (output >= 0 && output != MAX_DISTANCE)
-			state_clear_error_bit(1 << (id + 1));
-		else
-			state_set_error_bit(1 << (id + 1));
 
 		setWaterLevelPercent(id, output);
 

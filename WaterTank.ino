@@ -1,4 +1,5 @@
 #define REQUIRESALARMS false // FOR DS18B20 library
+#define REQUIRESALARMS false // FOR DS18B20 library
 #define MQTT_MAX_PACKET_SIZE 300 // FOR PubSubClient library
 #define MQTT_SOCKET_TIMEOUT 5 // FOR PubSubClient library
 
@@ -19,7 +20,7 @@
 unsigned long halfSecondTicks = 0;
 unsigned long secondTicks = 0;
 
-unsigned int waterLevelControllerState = 0;
+//unsigned int waterLevelControllerState = 0;
 
 Bounce floatSwitch1(PIN_FLOAT_SWITCH_1, false, 60 * 1000UL, 60 * 1000UL); // 60 sec, 60 sec
 Bounce floatSwitch2(PIN_FLOAT_SWITCH_2, false, 60 * 1000UL, 60 * 1000UL); // 60 sec, 60 sec
@@ -55,7 +56,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 1.0.6"));
+	Serial.println(F("Initializing.. ver. 2.0.0"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -230,30 +231,30 @@ bool isRelayOn(byte id)
 }
 
 
-boolean state_set_error_bit(int mask)
-{
-	if (!state_is_error_bit_set(mask))
-	{
-		waterLevelControllerState |= mask;
-		PublishControllerState();
-		return true;
-	}
-
-	return false;
-}
-
-
-boolean state_clear_error_bit(int mask)
-{
-	if (state_is_error_bit_set(mask))
-	{
-		waterLevelControllerState &= ~mask;
-		PublishControllerState();
-		return true;
-	}
-
-	return false;
-}
+//boolean state_set_error_bit(int mask)
+//{
+//	if (!state_is_error_bit_set(mask))
+//	{
+//		waterLevelControllerState |= mask;
+//		PublishControllerState();
+//		return true;
+//	}
+//
+//	return false;
+//}
+//
+//
+//boolean state_clear_error_bit(int mask)
+//{
+//	if (state_is_error_bit_set(mask))
+//	{
+//		waterLevelControllerState &= ~mask;
+//		PublishControllerState();
+//		return true;
+//	}
+//
+//	return false;
+//}
 
 void processFloatSwitches()
 {
