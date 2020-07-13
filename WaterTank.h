@@ -61,10 +61,10 @@ static const uint8_t PIN_BALL_VALVE2_CLOSED = 41;
 static const uint8_t PIN_BALL_VALVE3_OPEN = 42;
 static const uint8_t PIN_BALL_VALVE3_CLOSED = 43; 
 
-static const uint8_t PIN_RELAY_CLEAN_WATER_PUMP = 31;
+static const uint8_t PIN_RELAY_GARDEN_PUMP_BIG = 31;
 static const uint8_t PIN_RELAY_TECH_WATER_PUMP = 29;
-static const uint8_t PIN_RELAY_GARDEN_PUMP = 27;
-static const uint8_t PIN_RELAY_RESERVE_3 = 25;
+static const uint8_t PIN_RELAY_CLEAN_WATER_PUMP = 27;
+static const uint8_t PIN_RELAY_GARDEN_PUMP_SMALL = 25;
 static const uint8_t PIN_RELAY_RESERVE_4 = 23;
 
 const byte PIN_BLINKING_LED = LED_BUILTIN; // 13 in MEGA

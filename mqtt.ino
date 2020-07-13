@@ -10,8 +10,6 @@ PubSubClient mqttClient("192.168.1.23", 1883, callback, ethClient);     // Initi
 
 char buffer[MQTT_BUFFER_SIZE];
 
-boolean publishInitialState = true;
-
 extern SettingStructure settings[TANK_COUNT];
 
 void InitEthernet()
@@ -59,7 +57,6 @@ void PublishMqtt(const char* topic, const char* message, int len, boolean retain
 void ReconnectMqtt() {
 
 	if (!mqttClient.connected()) {
-		publishInitialState = true;
 
 		Serial.print(F("Connecting to MQTT broker..."));
 
@@ -118,7 +115,7 @@ void PublishTankState(byte id)
 	buffer[8] = float_switch_states[id] ? '1' : '0';
 	setHexInt16(buffer, ball_valve_state[id], 9);
 	buffer[13] = ball_valve_switch_state[id];
-	
+
 	PublishMqtt(topic, buffer, 14, true);
 }
 
@@ -130,6 +127,19 @@ void PublishRelayState(byte id, bool value)
 	strcpy(topic, "cha/wl/rs/?");
 	topic[10] = byteToHexChar(id);
 	PublishMqtt(topic, value ? "1" : "0", 1, true);
+}
+
+void PublishTime()
+{
+	if (!mqttClient.connected()) return;
+
+	const char* topic = "cha/wl/time";
+	int idx = 0;
+
+	time_t _now = now();
+
+	int len = setHexInt32(buffer, now(), 0);
+	PublishMqtt(topic, buffer, idx, false);
 }
 
 void PublishSettings()
@@ -235,47 +245,59 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		return;
 	}
 
-	//if (strcmp(topic, "chac/wl/settings/names") == 0)
-	//{
-	//	saveData(payload, len);
+	if (strcmp(topic, "chac/wl/gettime2") == 0)
+	{
+		PublishTime();
+		return;
+	}
 
-	//	PublishNamesAndOrder();
-	//	return;
-	//}
+	if (strcmp(topic, "chac/wl/settime2") == 0)
+	{
+		char* data = (char*)payload;
+		long tm = readHexInt32(data);
+
+		setTime(tm);
+		RTC.set(now());
+		printDateTime(&Serial, now());
+		Serial.println();
+		return;
+	}
 
 	if (strcmp(topic, "chac/wl/settime") == 0)
 	{
-		if (publishInitialState)
-		{
-			publishInitialState = false;
+		char* data = (char*)payload;
+		int yr, month, day;
+		int hr, min, sec;
 
-			char* data = (char*)payload;
-			int yr, month, day;
-			int hr, min, sec;
+		yr = 2000 + (*data++ - '0') * 10;
+		yr += (*data++ - '0');
 
-			yr = 2000 + (*data++ - '0') * 10;
-			yr += (*data++ - '0');
+		month = (*data++ - '0') * 10;
+		month += (*data++ - '0');
 
-			month = (*data++ - '0') * 10;
-			month += (*data++ - '0');
+		day = (*data++ - '0') * 10;
+		day += (*data++ - '0');
 
-			day = (*data++ - '0') * 10;
-			day += (*data++ - '0');
+		data++;
 
-			data++;
+		hr = (*data++ - '0') * 10;
+		hr += (*data++ - '0');
+		min = (*data++ - '0') * 10;
+		min += (*data++ - '0');
+		sec = (*data++ - '0') * 10;
+		sec += (*data++ - '0');
 
-			hr = (*data++ - '0') * 10;
-			hr += (*data++ - '0');
-			min = (*data++ - '0') * 10;
-			min += (*data++ - '0');
-			sec = (*data++ - '0') * 10;
-			sec += (*data++ - '0');
-
-			setTime(hr, min, sec, day, month, yr);
-			printDateTime(&Serial, now());
-
-			//PublishAllStates(false, true);
-		}
-		return;
+		setTime(hr, min, sec, day, month, yr);
+		printDateTime(&Serial, now());
 	}
+	return;
 }
+
+//if (strcmp(topic, "chac/wl/settings/names") == 0)
+//{
+//	saveData(payload, len);
+
+//	PublishNamesAndOrder();
+//	return;
+//}
+
