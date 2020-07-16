@@ -8,11 +8,24 @@ int setHexT(char *buffer, int T, int idx)
 
 int readHexT(const char* s)
 {
-	int value = readHex(s, 4);
+	int value = readHexInt16(s);
 	return value - 1000;
 }
 
-int readHexInt32(const char* s)
+int readHexInt16(const char* s)
+{
+	int value = 0;
+	byte length = 4;
+	while (length > 0)
+	{
+		value = (value << 4) | hexCharToByte(*s++);
+		length--;
+	}
+
+	return value;
+}
+
+long readHexInt32(const char* s)
 {
 	long value = 0;
 	int length = 8;
@@ -83,18 +96,6 @@ char byteToHexChar(byte b)
   if (b > 9)
     return b + 'A' - 10;
   return b + '0';
-}
-
-int readHex(const char* s, byte length)
-{
-  int value = 0;
-  while (length > 0)
-  {
-    value = (value << 4) | hexCharToByte(*s++);
-    length--;
-  }
-
-  return value;
 }
 
 void printDateTime(Print* client, time_t value)

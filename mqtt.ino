@@ -1,4 +1,4 @@
-byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
+﻿byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
 //IPAddress ip(192, 168, 2, 7);
 IPAddress ip(192, 168, 1, 7);
 
@@ -134,12 +134,8 @@ void PublishTime()
 	if (!mqttClient.connected()) return;
 
 	const char* topic = "cha/wl/time";
-	int idx = 0;
-
-	time_t _now = now();
-
 	int len = setHexInt32(buffer, now(), 0);
-	PublishMqtt(topic, buffer, idx, false);
+	PublishMqtt(topic, buffer, len, false);
 }
 
 void PublishSettings()
@@ -230,14 +226,30 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		return;
 	}
 
+
+	if (strncmp(topic, "chac/wl/settings2/", 18) == 0)
+	{
+		byte id = hexCharToByte(topic[18]);
+		char* p = (char*)payload;
+
+		settings[id].MaxDistance = readHexInt16(p);
+		p += 4;
+		settings[id].MinDistance = readHexInt16(p);
+		//p += 4;
+
+		saveSettings(true);
+		return;
+	}
+
+	//TODO ეს ძველია და წასაშლელია
 	if (strcmp(topic, "chac/wl/settings") == 0)
 	{
 		char* p = (char*)payload;
 		for (byte i = 0; i < TANK_COUNT; i++)
 		{
-			settings[i].MaxDistance = readHex(p, 4);
+			settings[i].MaxDistance = readHexInt16(p);
 			p += 4;
-			settings[i].MinDistance = readHex(p, 4);
+			settings[i].MinDistance = readHexInt16(p);
 			p += 4;
 		}
 
@@ -257,7 +269,7 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		long tm = readHexInt32(data);
 
 		setTime(tm);
-		RTC.set(now());
+		//RTC.set(now());
 		printDateTime(&Serial, now());
 		Serial.println();
 		return;
@@ -288,6 +300,7 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		sec += (*data++ - '0');
 
 		setTime(hr, min, sec, day, month, yr);
+		//RTC.set(now());
 		printDateTime(&Serial, now());
 	}
 	return;
