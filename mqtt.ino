@@ -1,4 +1,4 @@
-﻿byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
+byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
 //IPAddress ip(192, 168, 2, 7);
 IPAddress ip(192, 168, 1, 7);
 
@@ -85,14 +85,6 @@ void ReconnectMqtt() {
 	}
 }
 
-//void PublishControllerState()
-//{
-//	if (!mqttClient.connected()) return;
-//
-//	setHexInt16(buffer, waterLevelControllerState, 0);
-//	PublishMqtt("cha/wl/state", buffer, 4, true);
-//}
-
 void PublishAllStates(bool isInitialState)
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
@@ -153,27 +145,6 @@ void PublishSettings()
 
 	PublishMqtt(topic, buffer, idx, true);
 }
-
-//void PublishNamesAndOrder()
-//{
-//	if (!mqttClient.connected()) return;
-//
-//	const char* topic = "cha/wl/names";
-//
-//	int length = eeprom_read_word((uint16_t *)STORAGE_ADDRESS_DATA);
-//	Serial.print("load name & order data. len=");
-//	Serial.println(length);
-//
-//	for (int i = 0; i < length; i++)
-//	{
-//		byte b = eeprom_read_byte((uint8_t *)(STORAGE_ADDRESS_DATA + 2 + i));
-//		buffer[i] = b;
-//	}
-//
-//	PublishMqtt(topic, buffer, length, true);
-//}
-
-
 
 void callback(char* topic, byte * payload, unsigned int len) {
 
@@ -238,23 +209,8 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		//p += 4;
 
 		saveSettings(true);
-		return;
-	}
-
-	//TODO ეს ძველია და წასაშლელია
-	if (strcmp(topic, "chac/wl/settings") == 0)
-	{
-		char* p = (char*)payload;
-		for (byte i = 0; i < TANK_COUNT; i++)
-		{
-			settings[i].MaxDistance = readHexInt16(p);
-			p += 4;
-			settings[i].MinDistance = readHexInt16(p);
-			p += 4;
-		}
-
-		saveSettings(true);
-		return;
+    PublishTankState(id);
+    return;
 	}
 
 	if (strcmp(topic, "chac/wl/gettime2") == 0)
@@ -305,12 +261,3 @@ void callback(char* topic, byte * payload, unsigned int len) {
 	}
 	return;
 }
-
-//if (strcmp(topic, "chac/wl/settings/names") == 0)
-//{
-//	saveData(payload, len);
-
-//	PublishNamesAndOrder();
-//	return;
-//}
-
