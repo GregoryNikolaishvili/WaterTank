@@ -1,3 +1,5 @@
+#include "utility/w5100.h"
+
 byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
 //IPAddress ip(192, 168, 2, 7);
 IPAddress ip(192, 168, 1, 7);
@@ -10,6 +12,8 @@ PubSubClient mqttClient("192.168.1.23", 1883, callback, ethClient);     // Initi
 
 char buffer[MQTT_BUFFER_SIZE];
 
+bool doLog = true;
+
 extern SettingStructure settings[TANK_COUNT];
 
 void InitEthernet()
@@ -17,6 +21,10 @@ void InitEthernet()
 	Serial.println(F("Starting ethernet.."));
 
 	Ethernet.begin(mac, ip);
+	ethClient.setConnectionTimeout(2000);
+
+	W5100.setRetransmissionTime(0x07D0);
+	W5100.setRetransmissionCount(3);
 
 	Serial.print(F("IP Address: "));
 	Serial.println(Ethernet.localIP());
@@ -24,6 +32,8 @@ void InitEthernet()
 
 void InitMqtt()
 {
+	mqttClient.setBufferSize(320);
+	mqttClient.setSocketTimeout(5);
 	ReconnectMqtt();
 }
 
@@ -47,12 +57,14 @@ void PublishMqtt(const char* topic, const char* message, int len, boolean retain
 	mqttClient.publish(topic, (byte*)message, len, retained);
 }
 
-//void PublishMqttAlive(const char* topic)
-//{
-//	setHexInt32(buffer, now(), 0);
-//	PublishMqtt(topic, buffer, 8, false);
-//}
+void PublishAlive()
+{
+	if (!mqttClient.connected()) return;
 
+	const char* topic = "cha/wl/alive";
+	int len = setHexInt32(buffer, now(), 0);
+	PublishMqtt(topic, buffer, len, false);
+}
 
 void ReconnectMqtt() {
 
@@ -71,12 +83,10 @@ void ReconnectMqtt() {
 			// ... and resubscribe
 			mqttClient.subscribe("chac/wl/#", 1);     // Subscribe to a MQTT topic, qos = 1
 
-			mqttClient.publish("hubcommand/gettime", "chac/wl/settime");     // request time
+			mqttClient.publish("hubcommand/gettime2", "chac/wl/settime2");     // request time
 
-			//PublishControllerState();
 			PublishSettings();
-			//PublishNamesAndOrder();
-			PublishAllStates(true);
+			PublishAllStates();
 		}
 		else {
 			Serial.print(F("failed, rc="));
@@ -85,13 +95,17 @@ void ReconnectMqtt() {
 	}
 }
 
-void PublishAllStates(bool isInitialState)
+void PublishAllStates()
 {
+	doLog = false;
+
 	for (byte id = 0; id < TANK_COUNT; id++)
 		PublishTankState(id);
 
 	for (byte id = 0; id < RELAY_COUNT; id++)
 		PublishRelayState(id, isRelayOn(id));
+
+	doLog = true;
 }
 
 void PublishTankState(byte id)
@@ -156,10 +170,28 @@ void callback(char* topic, byte * payload, unsigned int len) {
 	Serial.write(payload, len);
 	Serial.println();
 
+
+	if (strcmp(topic, "chac/wl/alive") == 0)
+	{
+		PublishAlive();
+		return;
+	}
+
+	if (strcmp(topic, "chac/wl/refresh") == 0)
+	{
+		PublishAllStates();
+		return;
+	}
+
+	if (strcmp(topic, "chac/wl/gettime2") == 0)
+	{
+		PublishTime();
+		return;
+	}
+	
 	if (len == 0)
 		return;
-
-
+	
 	if (strncmp(topic, "chac/wl/state/", 14) == 0)
 	{
 		byte id = hexCharToByte(topic[14]);
@@ -189,15 +221,6 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		return;
 	}
 
-	if (strcmp(topic, "chac/wl/refresh") == 0)
-	{
-		PublishAllStates(false);
-		//PublishMqttAlive("cha/wl/alive");
-
-		return;
-	}
-
-
 	if (strncmp(topic, "chac/wl/settings2/", 18) == 0)
 	{
 		byte id = hexCharToByte(topic[18]);
@@ -211,12 +234,6 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		saveSettings(true);
     PublishTankState(id);
     return;
-	}
-
-	if (strcmp(topic, "chac/wl/gettime2") == 0)
-	{
-		PublishTime();
-		return;
 	}
 
 	if (strcmp(topic, "chac/wl/settime2") == 0)
