@@ -62,7 +62,7 @@ void PublishAlive()
 	if (!mqttClient.connected()) return;
 
 	const char* topic = "cha/wl/alive";
-	int len = setHexInt32(buffer, now(), 0);
+	int len = setHexInt32(buffer, now() - 4L * SECS_PER_HOUR, 0);
 	PublishMqtt(topic, buffer, len, false);
 }
 
@@ -140,7 +140,7 @@ void PublishTime()
 	if (!mqttClient.connected()) return;
 
 	const char* topic = "cha/wl/time";
-	int len = setHexInt32(buffer, now(), 0);
+	int len = setHexInt32(buffer, now() - 4L * SECS_PER_HOUR, 0);
 	PublishMqtt(topic, buffer, len, false);
 }
 
@@ -241,7 +241,7 @@ void callback(char* topic, byte * payload, unsigned int len) {
 		char* data = (char*)payload;
 		long tm = readHexInt32(data);
 
-		setTime(tm);
+		setTime(tm + 4L * SECS_PER_HOUR);
 		//RTC.set(now());
 		printDateTime(&Serial, now());
 		Serial.println();
