@@ -21,6 +21,7 @@
     <None Include="Utils.ino" />
     <None Include="BallValves.ino" />
     <None Include="Settings.ino" />
+    <None Include="Pressure.ino" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.WaterTank.vsarduino.h">

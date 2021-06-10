@@ -1,25 +1,18 @@
-static const int BALL_VALVE_FULLY_CLOSED = -0xFF;
-static const int BALL_VALVE_FULLY_OPEN = 0xFF;
-
 static int ball_valve_state[TANK_COUNT];
 static byte ball_valve_switch_state[TANK_COUNT];
 
 static byte hBridgePins[2 * HBRIDGE_COUNT] = {
-	PIN_HBRIDGE1_IN1,
-	PIN_HBRIDGE1_IN2,
-	PIN_HBRIDGE2_IN1,
-	PIN_HBRIDGE2_IN2,
-	PIN_HBRIDGE3_IN1,
-	PIN_HBRIDGE3_IN2,
-	PIN_HBRIDGE4_IN1,
-	PIN_HBRIDGE4_IN2
+	PIN_HBRIDGE_SMALL_IN1,
+	PIN_HBRIDGE_SMALL_IN2,
+	PIN_HBRIDGE_BIG_IN1,
+	PIN_HBRIDGE_BIG_IN2
 };
 
 void InitializeFloatSwitches()
 {
 	float_switch_states[0] = !floatSwitch1.read();
 	float_switch_states[1] = !floatSwitch2.read();
-	float_switch_states[2] = !floatSwitch3.read();
+	//float_switch_states[2] = !floatSwitch3.read();
 }
 
 void InitializeBallValves()
@@ -31,7 +24,6 @@ void InitializeBallValves()
 
 	setBallValveSwitchState(0, bouncerBV1Open.read(), bouncerBV1Close.read());
 	setBallValveSwitchState(1, bouncerBV2Open.read(), bouncerBV2Close.read());
-	setBallValveSwitchState(2, bouncerBV3Open.read(), bouncerBV3Close.read());
 
 	for (byte i = 0; i < 2 * HBRIDGE_COUNT; i++)
 	{
@@ -55,7 +47,7 @@ void InitializeBallValves()
 	//SetHBridge(0, 1); // Start closing
 	//delay(BALL_VALVE_OPEN_CLOSE_SECONDS * 1000); // wait for ball valves to close
 	//SetHBridge(0, 0); // remove power from ball valves
-/////////
+	/////////
 
 
 	for (byte id = 0; id < TANK_COUNT; id++)
@@ -74,16 +66,21 @@ void InitializeBallValves()
 }
 
 
+int getBallValveState(byte id)
+{
+  return ball_valve_state[id];
+}
+
 void setBallValve(byte id, bool value)
 {
-	static unsigned long prevOffSeconds[TANK_COUNT] = { 0, 0, 0 };
+	static unsigned long prevOffSeconds[TANK_COUNT] = { 0, 0 };
 
 	if (value > 0)
 	{
-		if (secondTicks < (prevOffSeconds[id] + BALL_VALVE_ON_DELAY_SEC)) // 5 min
+		if (ball_valve_state[id] <= 0 && secondTicks < (prevOffSeconds[id] + BALL_VALVE_ON_DELAY_SEC)) // 5 min
 		{
 			Serial.print(F("Delaying ball valve #"));
-			Serial.print(id + 1);
+			Serial.print(id);
 			Serial.print(F(" ON. Seconds left:"));
 			Serial.println((prevOffSeconds[id] + BALL_VALVE_ON_DELAY_SEC) - secondTicks);
 			return;
@@ -95,6 +92,7 @@ void setBallValve(byte id, bool value)
 		// if tank is full (at least one sensors)
 		if (isTankFull(id))
 		{
+      Serial.println("Tank is full");
 			return;
 		}
 	}
@@ -117,6 +115,7 @@ void setBallValve(byte id, bool value)
 
 void closeBallValve(byte id)
 {
+  Serial.println("Closing ball valve");
 	ball_valve_state[id] = -BALL_VALVE_OPEN_CLOSE_SECONDS;
 	SetHBridge(id, -1); // Negative, start closing
 	PublishTankState(id);
@@ -124,6 +123,7 @@ void closeBallValve(byte id)
 
 void openBallValve(byte id)
 {
+  Serial.println("Opening ball valve");
 	ball_valve_state[id] = BALL_VALVE_OPEN_CLOSE_SECONDS;
 	SetHBridge(id, 1); // Positive, start opening
 	PublishTankState(id);
@@ -203,10 +203,9 @@ static void SetHBridge(byte id, char value)
 	else
 		if (value < 0)
 			digitalWrite(pinIn2, HIGH);
-
-	Serial.print(F("HBridge #"));
-	Serial.print(id);
-	Serial.print(F(": "));
-	Serial.println((int)value);
+//
+//	Serial.print(F("HBridge #"));
+//	Serial.print(id);
+//	Serial.print(F(": "));
+//	Serial.println((int)value);
 }
-
