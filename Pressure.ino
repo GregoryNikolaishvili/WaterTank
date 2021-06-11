@@ -131,7 +131,7 @@ void recalcWaterLevelPercents()
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
-		setWaterLevelPercent(id, waterLevelDepths[id]));
+		setWaterLevelPercent(id, waterLevelDepths[id]);
 
 		PublishTankState(id);
 	}

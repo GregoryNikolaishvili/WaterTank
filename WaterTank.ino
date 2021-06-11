@@ -64,8 +64,9 @@ void setup()
 
   InitEthernet();
 
-  processPressureSensors();
   delay(500);
+  
+  processPressureSensors();
 
   processWaterLevels(); // duplicate. same is in loop
 

@@ -19,13 +19,13 @@ static const int BALL_VALVE_FULLY_OPEN = 0xFF;
 static const byte BALL_VALVE_OPEN_CLOSE_SECONDS = 10;
 
 static const uint8_t PIN_FLOAT_SWITCH_SMALL = 8;
-static const uint8_t PIN_PRESSURE_SENSOR_SMALL = A1; // 2 m3 tank
+static const uint8_t PIN_PRESSURE_SENSOR_SMALL = A0; // 2 m3 tank
 
 //static const uint8_t PIN_ULTRASONIC_1_TX = 2;
 //static const uint8_t PIN_ULTRASONIC_1_RX = 3;
 
 static const uint8_t PIN_FLOAT_SWITCH_BIG = 9;
-static const uint8_t PIN_PRESSURE_SENSOR_BIG = A2; // 5+5 m3 tank
+static const uint8_t PIN_PRESSURE_SENSOR_BIG = A1; // 5+5 m3 tank
 
 //static const uint8_t PIN_FLOAT_SWITCH_3 = 10;
 
