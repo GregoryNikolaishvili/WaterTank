@@ -1,4 +1,4 @@
-const byte DEF_SETTINGS_VERSION = 0x02;
+const byte DEF_SETTINGS_VERSION = 0x03;
 const int STORAGE_ADDRESS_SETTINGS = 0;
 
 
@@ -8,10 +8,10 @@ void readSettings()
 {
 	// Big tank
 	tankVoltageSettings[0].empty = 0; //mv
-	tankVoltageSettings[0].full = 1000; //mv
+	tankVoltageSettings[0].full = 1050; //mv
 	// Small tank
 	tankVoltageSettings[1].empty = 0; //mv
-	tankVoltageSettings[1].full = 1000; //mv
+	tankVoltageSettings[1].full = 100; //mv
 
 	byte v = eeprom_read_byte((uint8_t*)STORAGE_ADDRESS_SETTINGS);
 	if (v != DEF_SETTINGS_VERSION)

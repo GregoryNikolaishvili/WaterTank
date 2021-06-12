@@ -41,7 +41,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 3.0.1"));
+	Serial.println(F("Initializing.. ver. 3.0.2"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -226,14 +226,14 @@ void processTankWL(byte id)
 	boolean b1 = percent == PERCENT_ERR_VALUE;
 	boolean b2 = float_switch_states[id];
 
-	Serial.print(F("Id = "));
-	Serial.print(id);
-	Serial.print(F(", Percent = "));
-	Serial.print(percent);
-	Serial.print(F(", B1 = "));
-	Serial.print(b1);
-	Serial.print(F(", B2 = "));
-	Serial.println(b2);
+//	Serial.print(F("Id = "));
+//	Serial.print(id);
+//	Serial.print(F(", Percent = "));
+//	Serial.print(percent);
+//	Serial.print(F(", B1 = "));
+//	Serial.print(b1);
+//	Serial.print(F(", B2 = "));
+//	Serial.println(b2);
 
 	if (b1 && b2) // if both are on, turn off solenoid immediately
 	{
@@ -295,5 +295,5 @@ void setFloatSwitchState(byte id, bool value)
 
 bool isTankFull(byte id)
 {
-	return float_switch_states[id] || (getWaterTankPercent(id) == PERCENT_ERR_VALUE);
+	return float_switch_states[id] || (getWaterTankPercent(id) >= 100);
 }

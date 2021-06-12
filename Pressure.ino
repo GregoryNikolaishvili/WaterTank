@@ -9,7 +9,7 @@
 // Therefore, this module is designed with a wide range of 0-25mA detection range, which is compatible with fault detection, overrun detection applications. 
 
 
-static const long REFERENCE_VOLTAGE = 1100; // Internal 1.1V = 1100 mV
+static const long REFERENCE_VOLTAGE = 1100; // Internal 1.1V = 1100 mV 
 
 MovingAverageFilter voltageAvg[TANK_COUNT] =
 {
@@ -32,14 +32,8 @@ void processPressureSensors()
 {
 	for (byte id = 0; id < TANK_COUNT; id++)
 	{
-		int voltageMV = readVoltage(id);
-		setPressureSensorState(0, voltageMV);
-
-		Serial.print(F("Voltage #"));
-		Serial.print(id);
-		Serial.print(F(" = "));
-		Serial.println(voltageMV);
-		Serial.print(F(" mV"));
+		int value = readVoltage(id);
+		setPressureSensorState(id, value);
 	}
 }
 
@@ -59,35 +53,37 @@ int readVoltage(int id)
 
 void setPressureSensorState(byte id, int value)
 {
-	Serial.print(F("Voltage #"));
-	Serial.print(id + 1);
-	Serial.print(F(" Value = "));
-	Serial.print(value);
-
 	int oldValue = voltageAvg[id].getCurrentValue();
 	int newValue = voltageAvg[id].process(value);
 
+  newValue /= 10;
+  newValue *= 10; // Round
+  
 	if (oldValue != newValue)
 	{
 		PublishTankState(id);
 	}
 
-	Serial.print(F(", V = "));
-	Serial.print(newValue);
-	Serial.print(F(" mV, "));
+//  Serial.print(F("Voltage #"));
+//  Serial.print(id);
+//  Serial.print(F(" = "));
+//  Serial.print(value);
+//  Serial.print(F(" mV, Avg = "));
+//	Serial.print(newValue);
+//	Serial.println(F(" mV"));
 }
 
 
 int getPressureSensorState(byte id)
 {
-	return voltageAvg[id].getCurrentValue();
+	return (voltageAvg[id].getCurrentValue() / 10) * 10; // 1% accuracy is enough 
 }
 
 int getWaterTankPercent(byte id)
 {
-	int voltage = getPressureSensorState(id);
-	int empty = tankVoltageSettings[id].empty;
-	int full = tankVoltageSettings[id].full;
+	int voltage = getPressureSensorState(id) / 10; 
+	int empty = tankVoltageSettings[id].empty / 10; // 1% accuracy is enough
+	int full = tankVoltageSettings[id].full / 10;
 
 	if ((voltage < empty - 100) || (voltage > full + 100)) // mV
 		return PERCENT_ERR_VALUE;
@@ -98,4 +94,3 @@ int getWaterTankPercent(byte id)
 		return 100;
 	return (voltage - empty) * (long)100 / (full - empty);
 }
-

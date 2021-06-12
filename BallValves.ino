@@ -22,6 +22,18 @@ void InitializeBallValves()
 		ball_valve_switch_state[id] = '\0';
 	}
 
+  bouncerBigOpen.read();
+  bouncerBigClose.read();
+  bouncerSmallOpen.read();
+  bouncerSmallClose.read();
+
+  delay(600);
+
+  bouncerBigOpen.update();
+  bouncerBigClose.update();
+  bouncerSmallOpen.update();
+  bouncerSmallClose.update();
+
 	setBallValveSwitchState(0, bouncerBigOpen.read(), bouncerBigClose.read());
 	setBallValveSwitchState(1, bouncerSmallOpen.read(), bouncerSmallClose.read());
 

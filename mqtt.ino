@@ -82,7 +82,7 @@ void ReconnectMqtt() {
 		Serial.println(F("connected"));
 
 		// Once connected, publish an announcement...
-		mqttClient.publish("hub/controller/water_tank", "{\"state\":\"disconnected\"}", true);  // Publish ethernet connected status to MQTT topic
+		mqttClient.publish("hub/controller/water_tank", "{\"state\":\"connected\"}", true);  // Publish ethernet connected status to MQTT topic
 
 		// ... and resubscribe
 		mqttClient.subscribe("chac/wl/#", 1);     // Subscribe to a MQTT topic, qos = 1
