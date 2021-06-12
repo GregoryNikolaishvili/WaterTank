@@ -1,11 +1,17 @@
-const byte DEF_SETTINGS_VERSION = 0x01;
+const byte DEF_SETTINGS_VERSION = 0x02;
 const int STORAGE_ADDRESS_SETTINGS = 0;
 
 
+MinMaxVoltageSettingStructure tankVoltageSettings[TANK_COUNT];
+
 void readSettings()
 {
-	maxDepthSettings[0] = 110; //cm
-	maxDepthSettings[1] = 150; //cm
+	// Big tank
+	tankVoltageSettings[0].empty = 0; //mv
+	tankVoltageSettings[0].full = 1000; //mv
+	// Small tank
+	tankVoltageSettings[1].empty = 0; //mv
+	tankVoltageSettings[1].full = 1000; //mv
 
 	byte v = eeprom_read_byte((uint8_t*)STORAGE_ADDRESS_SETTINGS);
 	if (v != DEF_SETTINGS_VERSION)
@@ -15,21 +21,21 @@ void readSettings()
 	}
 	else
 	{
-		eeprom_read_block((void*)&maxDepthSettings, (void*)(STORAGE_ADDRESS_SETTINGS + 1), sizeof(maxDepthSettings));
+		eeprom_read_block((void*)&tankVoltageSettings, (void*)(STORAGE_ADDRESS_SETTINGS + 1), sizeof(tankVoltageSettings));
 		settingsChanged(false);
 	}
 }
 
 void saveSettings(bool publish)
 {
-	eeprom_update_block((const void*)&maxDepthSettings, (void*)(STORAGE_ADDRESS_SETTINGS + 1), sizeof(maxDepthSettings));
+	eeprom_update_block((const void*)&tankVoltageSettings, (void*)(STORAGE_ADDRESS_SETTINGS + 1), sizeof(tankVoltageSettings));
 
 	settingsChanged(publish);
 }
 
 void settingsChanged(bool publish)
 {
-	recalcWaterLevelPercents();
+	PublishAllStates();
 
 	if (publish)
 		PublishSettings();

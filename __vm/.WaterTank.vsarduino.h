@@ -81,7 +81,6 @@ typedef void *__builtin_va_list;
 #include "BallValves.ino"
 #include "Pressure.ino"
 #include "Settings.ino"
-#include "Ultrasonic.ino"
 #include "Utils.ino"
 #include "mqtt.ino"
 #endif

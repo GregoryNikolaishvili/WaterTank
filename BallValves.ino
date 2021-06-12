@@ -2,10 +2,10 @@ static int ball_valve_state[TANK_COUNT];
 static byte ball_valve_switch_state[TANK_COUNT];
 
 static byte hBridgePins[2 * HBRIDGE_COUNT] = {
-	PIN_HBRIDGE_SMALL_IN1,
-	PIN_HBRIDGE_SMALL_IN2,
 	PIN_HBRIDGE_BIG_IN1,
-	PIN_HBRIDGE_BIG_IN2
+	PIN_HBRIDGE_BIG_IN2,
+	PIN_HBRIDGE_SMALL_IN1,
+	PIN_HBRIDGE_SMALL_IN2
 };
 
 void InitializeFloatSwitches()
@@ -22,8 +22,8 @@ void InitializeBallValves()
 		ball_valve_switch_state[id] = '\0';
 	}
 
-	setBallValveSwitchState(0, bouncerBV1Open.read(), bouncerBV1Close.read());
-	setBallValveSwitchState(1, bouncerBV2Open.read(), bouncerBV2Close.read());
+	setBallValveSwitchState(0, bouncerBigOpen.read(), bouncerBigClose.read());
+	setBallValveSwitchState(1, bouncerSmallOpen.read(), bouncerSmallClose.read());
 
 	for (byte i = 0; i < 2 * HBRIDGE_COUNT; i++)
 	{
@@ -68,7 +68,7 @@ void InitializeBallValves()
 
 int getBallValveState(byte id)
 {
-  return ball_valve_state[id];
+	return ball_valve_state[id];
 }
 
 void setBallValve(byte id, bool value)
@@ -92,7 +92,7 @@ void setBallValve(byte id, bool value)
 		// if tank is full (at least one sensors)
 		if (isTankFull(id))
 		{
-      Serial.println("Tank is full");
+			Serial.println("Tank is full");
 			return;
 		}
 	}
@@ -115,7 +115,7 @@ void setBallValve(byte id, bool value)
 
 void closeBallValve(byte id)
 {
-  Serial.println("Closing ball valve");
+	Serial.println("Closing ball valve");
 	ball_valve_state[id] = -BALL_VALVE_OPEN_CLOSE_SECONDS;
 	SetHBridge(id, -1); // Negative, start closing
 	PublishTankState(id);
@@ -123,7 +123,7 @@ void closeBallValve(byte id)
 
 void openBallValve(byte id)
 {
-  Serial.println("Opening ball valve");
+	Serial.println("Opening ball valve");
 	ball_valve_state[id] = BALL_VALVE_OPEN_CLOSE_SECONDS;
 	SetHBridge(id, 1); // Positive, start opening
 	PublishTankState(id);
@@ -187,6 +187,7 @@ void processBallValve()
 		}
 		else
 			ball_valve_state[id] = state;
+		PublishTankState(id);
 	}
 }
 
@@ -203,9 +204,9 @@ static void SetHBridge(byte id, char value)
 	else
 		if (value < 0)
 			digitalWrite(pinIn2, HIGH);
-//
-//	Serial.print(F("HBridge #"));
-//	Serial.print(id);
-//	Serial.print(F(": "));
-//	Serial.println((int)value);
+	//
+	//	Serial.print(F("HBridge #"));
+	//	Serial.print(id);
+	//	Serial.print(F(": "));
+	//	Serial.println((int)value);
 }
