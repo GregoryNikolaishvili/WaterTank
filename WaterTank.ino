@@ -41,7 +41,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 3.0.3"));
+	Serial.println(F("Initializing.. ver. 3.0.4"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -223,7 +223,7 @@ void processTankWL(byte id)
 
 	int percent = getWaterTankPercent(id); 
 
-	boolean b1 = percent == PERCENT_ERR_VALUE;
+	boolean b1 = percent >= 100;
 	boolean b2 = float_switch_states[id];
 
 //	Serial.print(F("Id = "));
