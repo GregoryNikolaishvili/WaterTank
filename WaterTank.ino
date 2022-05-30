@@ -41,7 +41,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 3.0.4"));
+	Serial.println(F("Initializing.. ver. 3.0.5"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -269,7 +269,7 @@ void processTankWL(byte id)
 		return;
 	}
 
-	if (percent <= 90) // 10% delta
+	if (percent <= 80) // 20% delta
 	{
 		prevFullSeconds[id] = 0;
 		setBallValve(id, true); // Open
