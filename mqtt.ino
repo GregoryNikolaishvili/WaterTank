@@ -1,15 +1,18 @@
 #include "utility/w5100.h"
 
-byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
-//IPAddress ip(192, 168, 2, 7);
-IPAddress ip(192, 168, 1, 7);
+const char* MqttUserName = "cha";
+const char* MqttPassword = "BatoBato02@";
+
+IPAddress ip(192, 168, 68, 7);
+IPAddress gateway(192, 168, 68, 1);
+IPAddress subnet(255, 255, 252, 0);
 
 EthernetClient ethClient;
-PubSubClient mqttClient("192.168.1.23", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
-//PubSubClient mqttClient("212.72.150.154", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
+PubSubClient mqttClient("192.168.68.23", 1883, callback, ethClient);     // Initialize a MQTT mqttClient instance
+
+byte mac[] = { 0x54, 0x34, 0x41, 0x30, 0x30, 0x07 };
 
 #define MQTT_BUFFER_SIZE 256
-
 char buffer[MQTT_BUFFER_SIZE];
 
 bool doLog = true;
@@ -18,7 +21,7 @@ void InitEthernet()
 {
 	Serial.println(F("Starting ethernet.."));
 
-	Ethernet.begin(mac, ip);
+	Ethernet.begin(mac, ip, gateway, gateway, subnet);
 	ethClient.setConnectionTimeout(2000);
 
 	W5100.setRetransmissionTime(0x07D0);
@@ -70,15 +73,13 @@ void PublishAlive()
 }
 
 void ReconnectMqtt() {
-
 	if (mqttClient.connected())
 		return;
 
 	Serial.print(F("Connecting to MQTT broker..."));
 
 	// Attempt to connect
-	if (mqttClient.connect("water_tank", "hub/controller/water_tank", 1, true, "{\"state\":\"disconnected\"}")) {
-
+	if (mqttClient.connect("water_tank", MqttUserName, MqttPassword, "hub/controller/water_tank", 1, true, "{\"state\":\"disconnected\"}")) {
 		Serial.println(F("connected"));
 
 		// Once connected, publish an announcement...
@@ -164,7 +165,6 @@ void PublishSettings()
 }
 
 void callback(char* topic, byte* payload, unsigned int len) {
-
 	Serial.print(F("message arrived: topic='"));
 	Serial.print(topic);
 	Serial.print(F("', length="));

@@ -33,15 +33,13 @@ static byte relayPins[RELAY_COUNT] = {
   PIN_RELAY_RESERVE_4
 };
 
-
-
 void setup()
 {
 	wdt_disable();
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 3.0.5"));
+	Serial.println(F("Initializing.. ver. 3.0.6"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -132,7 +130,6 @@ void oncePer5Second()
 {
 }
 
-
 void oncePer1Minute()
 {
 	if (MqttIsConnected())
@@ -221,19 +218,19 @@ void processTankWL(byte id)
 {
 	static unsigned long prevFullSeconds[] = { 0, 0, 0, 0 };
 
-	int percent = getWaterTankPercent(id); 
+	int percent = getWaterTankPercent(id);
 
 	boolean b1 = percent >= 100;
 	boolean b2 = float_switch_states[id];
 
-//	Serial.print(F("Id = "));
-//	Serial.print(id);
-//	Serial.print(F(", Percent = "));
-//	Serial.print(percent);
-//	Serial.print(F(", B1 = "));
-//	Serial.print(b1);
-//	Serial.print(F(", B2 = "));
-//	Serial.println(b2);
+	//	Serial.print(F("Id = "));
+	//	Serial.print(id);
+	//	Serial.print(F(", Percent = "));
+	//	Serial.print(percent);
+	//	Serial.print(F(", B1 = "));
+	//	Serial.print(b1);
+	//	Serial.print(F(", B2 = "));
+	//	Serial.println(b2);
 
 	if (b1 && b2) // if both are on, turn off solenoid immediately
 	{
