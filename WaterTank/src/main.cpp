@@ -96,7 +96,7 @@ static void oncePerHalfSecond(void)
 	blinkingLedState = ~blinkingLedState;
 	digitalWrite(PIN_BLINKING_LED, blinkingLedState);
 
-	ballValve->processBallValveSwitches(false);
+	ballValve->processBallValveSwitches();
 
 	if (halfSecondTicks % PROCESS_INTERVAL_WATER_LEVEL_HALF_SEC == 0)
 	{
@@ -189,9 +189,14 @@ void setup()
 	waterPump1.setCurrentState(true);
 	waterPump2.setCurrentState(true);
 
+	valveOpenSwitch.setCurrentState(true);
+	valveCloseSwitch.setCurrentState(true);
+
+	mqtt.loop();
 	pressureSensorX = new PressureSensorX(pressureSensor);
 	ballValve = new BallValve(&waterValve, &valveOpenSwitch, &valveCloseSwitch, pressureSensorX);
 
+	mqtt.loop();
 	pressureSensorX->processPressureSensor(mqtt, true);
 	waterTankSensor.setCurrentValue(pressureSensorX->getWaterTankPercent());
 

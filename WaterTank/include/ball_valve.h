@@ -18,7 +18,7 @@ public:
     void closeBallValve();
     void openBallValve();
     void processBallValve();
-    void processBallValveSwitches(bool isInitialization);
+    void processBallValveSwitches();
 
 private:
     int _ball_valve_state;

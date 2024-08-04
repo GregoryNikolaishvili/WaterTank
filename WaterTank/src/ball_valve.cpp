@@ -7,8 +7,8 @@ BallValve::BallValve(HAValveX *waterValve, HABinarySensor *valveOpenSwitch, HABi
 	_valveCloseSwitch = valveCloseSwitch;
 	_pressureSensor = pressureSensor;
 
-	pinMode(PIN_BALL_VALVE_BIG_OPEN, OUTPUT);
-	pinMode(PIN_BALL_VALVE_BIG_CLOSED, OUTPUT);
+	pinMode(PIN_BALL_VALVE_BIG_OPEN, INPUT_PULLUP);
+	pinMode(PIN_BALL_VALVE_BIG_CLOSED, INPUT_PULLUP);
 
 #ifndef SIMULATION_MODE
 	for (byte i = 0; i < 2 * HBRIDGE_COUNT; i++)
@@ -21,7 +21,7 @@ BallValve::BallValve(HAValveX *waterValve, HABinarySensor *valveOpenSwitch, HABi
 
 void BallValve::initializeBallValve()
 {
-	processBallValveSwitches(true);
+	processBallValveSwitches();
 
 	//////////////
 	// SetHBridge(0, -1); // Start closing
@@ -50,7 +50,7 @@ void BallValve::initializeBallValve()
 	}
 
 	_ball_valve_state = BALL_VALVE_FULLY_CLOSED;
-	_waterValve->setCurrentState(HAValveX::StateClosed);
+	_waterValve->setState(HAValveX::StateClosed);
 	Serial.println(F("Closed"));
 }
 
@@ -140,18 +140,10 @@ void BallValve::processBallValve()
 	}
 }
 
-void BallValve::processBallValveSwitches(bool isInitialization)
+void BallValve::processBallValveSwitches()
 {
-	if (isInitialization)
-	{
-		_valveOpenSwitch->setCurrentState(digitalRead(PIN_BALL_VALVE_BIG_OPEN));
-		_valveCloseSwitch->setCurrentState(digitalRead(PIN_BALL_VALVE_BIG_CLOSED));
-	}
-	else
-	{
-		_valveOpenSwitch->setState(digitalRead(PIN_BALL_VALVE_BIG_OPEN));
-		_valveCloseSwitch->setState(digitalRead(PIN_BALL_VALVE_BIG_CLOSED));
-	}
+	_valveOpenSwitch->setState(!digitalRead(PIN_BALL_VALVE_BIG_OPEN));
+	_valveCloseSwitch->setState(!digitalRead(PIN_BALL_VALVE_BIG_CLOSED));
 }
 
 void BallValve::setHBridge(byte id, char value)
