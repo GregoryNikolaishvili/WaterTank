@@ -12,6 +12,9 @@
         "variant": "cpp",
         "string_view": "cpp",
         "ranges": "cpp",
-        "cstddef": "cpp"
+        "cstddef": "cpp",
+        "*.xcpp": "c",
+        "hanumeric.h": "c",
+        "typeinfo": "cpp"
     }
 }

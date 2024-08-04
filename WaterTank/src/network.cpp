@@ -1,12 +1,16 @@
 #include "network.h"
 
+#ifndef SIMULATION_MODE
 IPAddress ip(192, 168, 68, 7);
+#else
+IPAddress ip(192, 168, 68, 17);
+#endif
 IPAddress gateway(192, 168, 68, 1);
 IPAddress subnet(255, 255, 252, 0);
 
-byte mac[] = {0x54, 0x34, 0x41, 0x30, 0x30, 0x07};
-
 #ifndef SIMULATION_MODE
+
+byte mac[] = {0x54, 0x34, 0x41, 0x30, 0x30, 0x07};
 
 #include "utility/w5100.h"
 
@@ -28,6 +32,8 @@ void initNetwork(HADevice &device, EthernetClient &client)
 
 #else
 
+byte mac[] = {0x55, 0x34, 0x41, 0x30, 0x30, 0x07};
+
 bool printWifiInfo = true;
 bool doLog = true;
 
@@ -41,9 +47,6 @@ void initNetwork(HADevice &device)
 	{
 		Serial.println("STA Failed to configure");
 	}
-
-	byte mac[WL_MAC_ADDR_LENGTH];
-	WiFi.macAddress(mac);
 	device.setUniqueId(mac, sizeof(mac));
 
 	reconnectWifi();

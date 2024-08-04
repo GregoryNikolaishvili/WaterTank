@@ -3,10 +3,10 @@
 HASwitchX::HASwitchX(const char *uniqueId, const char *name, byte pinId, bool isInverted)
     : HASwitch(uniqueId), _pinId(pinId), _isInverted(isInverted)
 {
-  setState(isInverted ? HIGH : LOW);
+  setState(false);
   setName(name);
-  setIcon("mdi:pump");
+  setIcon("mdi:water-pump");
 
   pinMode(pinId, OUTPUT);
-	digitalWrite(pinId, HIGH);
+  digitalWrite(pinId, HIGH);
 }

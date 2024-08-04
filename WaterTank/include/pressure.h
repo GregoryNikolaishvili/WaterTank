@@ -25,7 +25,7 @@ class PressureSensorX
 public:
 	PressureSensorX(HASensorNumber &pressureSensor);
 
-	void processPressureSensor(HAMqtt &mqtt);
+	void processPressureSensor(HAMqtt &mqtt, bool isInitialization);
 	int getWaterTankPercent();
 private:
 	HASensorNumber *_pressureSensor;

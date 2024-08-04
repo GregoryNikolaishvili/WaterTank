@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include <ArduinoHA.h>
+#include <HAValveX.h>
 
 #include "main.h"
 #include "pressure.h"
@@ -10,20 +11,20 @@
 class BallValve
 {
 public:
-    BallValve(HASensor *valveState, HABinarySensor *valveOpenSwitch, HABinarySensor *valveCloseSwitch, PressureSensorX *pressureSensor);
+    BallValve(HAValveX *waterValve, HABinarySensor *valveOpenSwitch, HABinarySensor *valveCloseSwitch, PressureSensorX *pressureSensor);
 
     void initializeBallValve();
     void setBallValve(bool value, unsigned long secondTicks);
     void closeBallValve();
     void openBallValve();
     void processBallValve();
-    void processBallValveSwitches();
+    void processBallValveSwitches(bool isInitialization);
 
 private:
     int _ball_valve_state;
     PressureSensorX *_pressureSensor;
 
-    HASensor *_valveState;
+    HAValveX *_waterValve;
     HABinarySensor *_valveOpenSwitch;
     HABinarySensor *_valveCloseSwitch;
 

@@ -17,7 +17,7 @@ PressureSensorX::PressureSensorX(HASensorNumber &pressureSensor)
 	readSettings();
 }
 
-void PressureSensorX::processPressureSensor(HAMqtt &mqtt)
+void PressureSensorX::processPressureSensor(HAMqtt &mqtt, bool isInitialization)
 {
 	int milliVolts = readVoltageMV(mqtt);
 
@@ -26,6 +26,12 @@ void PressureSensorX::processPressureSensor(HAMqtt &mqtt)
 
 	newValue /= 10;
 	newValue *= 10; // Round
+
+	if (isInitialization)
+	{
+		_pressureSensor->setCurrentValue(newValue);
+		return;
+	}
 
 	if (oldValue != newValue)
 		_pressureSensor->setValue(newValue);
@@ -67,9 +73,9 @@ void PressureSensorX::readSettings()
 	// Big tank
 	_tankVoltageSettings.empty = 580; // mv
 	_tankVoltageSettings.full = 1050; // mv
-	//// Small tank
-	// tankVoltageSettings[1].empty = 520; //mv
-	// tankVoltageSettings[1].full = 1000; //mv
+									  //// Small tank
+									  // tankVoltageSettings[1].empty = 520; //mv
+									  // tankVoltageSettings[1].full = 1000; //mv
 
 #ifndef SIMULATION_MODE
 	byte v = eeprom_read_byte((uint8_t *)STORAGE_ADDRESS_SETTINGS);

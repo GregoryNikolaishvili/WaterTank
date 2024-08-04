@@ -6,6 +6,7 @@
 #include "network.h"
 
 #include <HASwitchX.h>
+#include <HAValveX.h>
 #include <MovingAverageFilter.h>
 
 #ifndef SIMULATION_MODE
@@ -33,7 +34,8 @@ HASwitchX waterPump2("pump_2", "Pump 2", PIN_RELAY_TECH_WATER_PUMP, true);
 HASwitchX waterPump3("pump_3", "Pump 3", PIN_RELAY_RESERVE_4, false);
 
 // Home Assistant sensors
-HASensor valveState("valve_state");
+HAValveX waterValve("water_valve");
+
 HABinarySensor valveOpenSwitch("valve_open_switch");
 HABinarySensor valveCloseSwitch("valve_close_switch");
 
@@ -43,16 +45,10 @@ HASensorNumber waterTankSensor("water_tank", HASensorNumber::PrecisionP0);
 PressureSensorX *pressureSensorX;
 BallValve *ballValve;
 
-// static void initRelayPin(byte pin, bool isInverted)
-// {
-// 	pinMode(pin, OUTPUT);
-// 	digitalWrite(pin, isInverted ? HIGH : LOW);
-// }
-
 // called every 30 second
 static void processWaterLevels()
 {
-	pressureSensorX->processPressureSensor(mqtt);
+	pressureSensorX->processPressureSensor(mqtt, false);
 
 	int percent = pressureSensorX->getWaterTankPercent();
 	waterTankSensor.setValue(percent);
@@ -100,7 +96,7 @@ static void oncePerHalfSecond(void)
 	blinkingLedState = ~blinkingLedState;
 	digitalWrite(PIN_BLINKING_LED, blinkingLedState);
 
-	ballValve->processBallValveSwitches();
+	ballValve->processBallValveSwitches(false);
 
 	if (halfSecondTicks % PROCESS_INTERVAL_WATER_LEVEL_HALF_SEC == 0)
 	{
@@ -120,6 +116,21 @@ void onRelayCommand(bool state, HASwitch *sender)
 	sender->setState(state); // report state back to the Home Assistant
 }
 
+void onValveCommand(HAValveX::ValveCommand command, HAValveX *sender)
+{
+	switch (command)
+	{
+	case HAValveX::CommandOpen:
+		ballValve->openBallValve();
+		break;
+
+	case HAValveX::CommandClose:
+	case HAValveX::CommandStop:
+		ballValve->closeBallValve();
+		break;
+	}
+}
+
 void setup()
 {
 #ifndef SIMULATION_MODE
@@ -133,15 +144,6 @@ void setup()
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
 
-	// Init relays
-	// initRelayPin(PIN_RELAY_GARDEN_PUMP_BIG);
-	// initRelayPin(PIN_RELAY_GARDEN_PUMP_SMALL);
-
-	// initRelayPin(PIN_RELAY_CLEAN_WATER_PUMP);
-
-	// initRelayPin(PIN_RELAY_TECH_WATER_PUMP);
-	// initRelayPin(PIN_RELAY_RESERVE_4);
-
 #ifndef SIMULATION_MODE
 	initNetwork(device, client);
 #else
@@ -153,7 +155,11 @@ void setup()
 
 	device.enableSharedAvailability();
 	device.enableLastWill();
+#ifndef SIMULATION_MODE
 	device.setName("Water tank controller");
+#else
+	device.setName("Water tank controller (Simulated)");
+#endif
 	device.setSoftwareVersion("4.0.0");
 	device.setManufacturer("Gregory Nikolaishvili");
 
@@ -163,9 +169,9 @@ void setup()
 	valveCloseSwitch.setName("Valve Close Switch");
 	valveCloseSwitch.setIcon("mdi:valve-closed");
 
-	valveState.setName("Valve State");
-	// valveState.setDeviceClass("enum");
-	valveState.setIcon("mdi:valve");
+	waterValve.setName("Water Valve");
+	waterValve.setIcon("mdi:pipe-valve");
+	waterValve.onCommand(onValveCommand);
 
 	pressureSensor.setName("Voltage");
 	pressureSensor.setDeviceClass("voltage");
@@ -173,19 +179,23 @@ void setup()
 
 	waterTankSensor.setName("Water Tank Level");
 	waterTankSensor.setUnitOfMeasurement("%");
+	waterTankSensor.setIcon("mdi:car-coolant-level");
 
 	gardenPumpBig.onCommand(onRelayCommand);
 	gardenPumpSmall.onCommand(onRelayCommand);
 	waterPump1.onCommand(onRelayCommand);
 	waterPump2.onCommand(onRelayCommand);
 	waterPump3.onCommand(onRelayCommand);
+	waterPump1.setCurrentState(true);
+	waterPump2.setCurrentState(true);
 
 	pressureSensorX = new PressureSensorX(pressureSensor);
-	ballValve = new BallValve(&valveState, &valveOpenSwitch, &valveCloseSwitch, pressureSensorX);
+	ballValve = new BallValve(&waterValve, &valveOpenSwitch, &valveCloseSwitch, pressureSensorX);
 
-	pressureSensorX->processPressureSensor(mqtt);
+	pressureSensorX->processPressureSensor(mqtt, true);
+	waterTankSensor.setCurrentValue(pressureSensorX->getWaterTankPercent());
+
 	ballValve->initializeBallValve();
-	processWaterLevels(); // duplicate. same is in loop
 
 #ifndef SIMULATION_MODE
 	wdt_enable(WDTO_8S);
