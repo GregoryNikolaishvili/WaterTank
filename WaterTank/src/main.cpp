@@ -25,12 +25,12 @@ HADevice device;
 HAMqtt mqtt(client, device, RELAY_COUNT + 6);
 
 // HASwitchX instances
-HASwitchX gardenPumpBig("pump_garden_big", "Big", PIN_RELAY_GARDEN_PUMP_BIG);
-HASwitchX gardenPumpSmall("pump_garden_small", "Small", PIN_RELAY_GARDEN_PUMP_SMALL);
+HASwitchX gardenPumpBig("pump_garden_big", "Big", PIN_RELAY_GARDEN_PUMP_BIG, false);
+HASwitchX gardenPumpSmall("pump_garden_small", "Small", PIN_RELAY_GARDEN_PUMP_SMALL, false);
 
-HASwitchX waterPump1("pump_1", "Pump 1", PIN_RELAY_CLEAN_WATER_PUMP);
-HASwitchX waterPump2("pump_2", "Pump 2", PIN_RELAY_TECH_WATER_PUMP);
-HASwitchX waterPump3("pump_3", "Pump 3", PIN_RELAY_RESERVE_4);
+HASwitchX waterPump1("pump_1", "Pump 1", PIN_RELAY_CLEAN_WATER_PUMP, true);
+HASwitchX waterPump2("pump_2", "Pump 2", PIN_RELAY_TECH_WATER_PUMP, true);
+HASwitchX waterPump3("pump_3", "Pump 3", PIN_RELAY_RESERVE_4, false);
 
 // Home Assistant sensors
 HASensor valveState("valve_state");
@@ -43,11 +43,11 @@ HASensorNumber waterTankSensor("water_tank", HASensorNumber::PrecisionP0);
 PressureSensorX *pressureSensorX;
 BallValve *ballValve;
 
-static void initRelayPin(byte pin)
-{
-	pinMode(pin, OUTPUT);
-	digitalWrite(pin, HIGH);
-}
+// static void initRelayPin(byte pin, bool isInverted)
+// {
+// 	pinMode(pin, OUTPUT);
+// 	digitalWrite(pin, isInverted ? HIGH : LOW);
+// }
 
 // called every 30 second
 static void processWaterLevels()
@@ -113,6 +113,13 @@ static void oncePerHalfSecond(void)
 		oncePerSecond();
 }
 
+void onRelayCommand(bool state, HASwitch *sender)
+{
+	HASwitchX *sw = (HASwitchX *)sender;
+	digitalWrite(sw->getPin(), state ^ sw->IsInverted() ? LOW : HIGH);
+	sender->setState(state); // report state back to the Home Assistant
+}
+
 void setup()
 {
 #ifndef SIMULATION_MODE
@@ -127,12 +134,13 @@ void setup()
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
 
 	// Init relays
-	initRelayPin(PIN_RELAY_GARDEN_PUMP_BIG);
-	initRelayPin(PIN_RELAY_GARDEN_PUMP_SMALL);
+	// initRelayPin(PIN_RELAY_GARDEN_PUMP_BIG);
+	// initRelayPin(PIN_RELAY_GARDEN_PUMP_SMALL);
 
-	initRelayPin(PIN_RELAY_CLEAN_WATER_PUMP);
-	initRelayPin(PIN_RELAY_TECH_WATER_PUMP);
-	initRelayPin(PIN_RELAY_RESERVE_4);
+	// initRelayPin(PIN_RELAY_CLEAN_WATER_PUMP);
+
+	// initRelayPin(PIN_RELAY_TECH_WATER_PUMP);
+	// initRelayPin(PIN_RELAY_RESERVE_4);
 
 #ifndef SIMULATION_MODE
 	initNetwork(device, client);
@@ -166,11 +174,17 @@ void setup()
 	waterTankSensor.setName("Water Tank Level");
 	waterTankSensor.setUnitOfMeasurement("%");
 
+	gardenPumpBig.onCommand(onRelayCommand);
+	gardenPumpSmall.onCommand(onRelayCommand);
+	waterPump1.onCommand(onRelayCommand);
+	waterPump2.onCommand(onRelayCommand);
+	waterPump3.onCommand(onRelayCommand);
+
 	pressureSensorX = new PressureSensorX(pressureSensor);
 	ballValve = new BallValve(&valveState, &valveOpenSwitch, &valveCloseSwitch, pressureSensorX);
 
 	pressureSensorX->processPressureSensor(mqtt);
- 	ballValve->initializeBallValve();
+	ballValve->initializeBallValve();
 	processWaterLevels(); // duplicate. same is in loop
 
 #ifndef SIMULATION_MODE

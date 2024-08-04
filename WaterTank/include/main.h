@@ -37,8 +37,8 @@ static const uint8_t PIN_BALL_VALVE_BIG_CLOSED = 41;
 static const uint8_t PIN_RELAY_GARDEN_PUMP_BIG = 31;
 static const uint8_t PIN_RELAY_TECH_WATER_PUMP = 29;
 static const uint8_t PIN_RELAY_CLEAN_WATER_PUMP = 27;
-static const uint8_t PIN_RELAY_GARDEN_PUMP_SMALL = 25;
-static const uint8_t PIN_RELAY_RESERVE_4 = 23;
+static const uint8_t PIN_RELAY_GARDEN_PUMP_SMALL = 23;
+static const uint8_t PIN_RELAY_RESERVE_4 = 25;
 
 #else
 static const uint8_t PIN_PRESSURE_SENSOR_BIG = A0; // 5+5 m3 tank
