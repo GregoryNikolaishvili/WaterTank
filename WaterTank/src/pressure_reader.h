@@ -1,3 +1,6 @@
+#ifndef _PRESSURE_READER_H
+#define _PRESSURE_READER_H
+
 #include <Arduino.h>
 #include <ArduinoHA.h>
 #include <MovingAverageFilter.h>
@@ -20,10 +23,10 @@ struct MinMaxVoltageSettingStructure
 	int empty; // Millivolt
 };
 
-class PressureSensorX
+class PressureReader
 {
 public:
-	PressureSensorX(HASensorNumber &pressureSensor);
+	PressureReader(HASensorNumber &pressureSensor);
 
 	void processPressureSensor(HAMqtt &mqtt, bool isInitialization);
 	int getWaterTankPercent();
@@ -36,3 +39,5 @@ private:
 	int readVoltageMV(HAMqtt &mqtt);
 	void readSettings();
 };
+
+#endif

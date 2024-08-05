@@ -6,6 +6,7 @@ HASwitchX::HASwitchX(const char *uniqueId, const char *name, byte pinId, bool is
   setState(false);
   setName(name);
   setIcon("mdi:water-pump");
+  setDeviceClass("switch");
 
   pinMode(pinId, OUTPUT);
   digitalWrite(pinId, HIGH);

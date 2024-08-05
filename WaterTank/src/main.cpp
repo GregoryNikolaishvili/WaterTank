@@ -1,13 +1,10 @@
-#include <Arduino.h>
-#include <ArduinoHA.h>
-
 #include "main.h"
-#include "ball_valve.h"
 #include "network.h"
+#include "ball_valve.h"
 
+#include <ArduinoHA.h>
 #include <HASwitchX.h>
 #include <HAValveX.h>
-#include <MovingAverageFilter.h>
 
 #ifndef SIMULATION_MODE
 #include <avr/wdt.h>
@@ -42,15 +39,15 @@ HABinarySensor valveCloseSwitch("valve_close_switch");
 HASensorNumber pressureSensor("pressure_sensor", HASensorNumber::PrecisionP0);
 HASensorNumber waterTankSensor("water_tank", HASensorNumber::PrecisionP0);
 
-PressureSensorX *pressureSensorX;
+PressureReader *pressureReader;
 BallValve *ballValve;
 
 // called every 30 second
 static void processWaterLevels()
 {
-	pressureSensorX->processPressureSensor(mqtt, false);
+	pressureReader->processPressureSensor(mqtt, false);
 
-	int percent = pressureSensorX->getWaterTankPercent();
+	int percent = pressureReader->getWaterTankPercent();
 	waterTankSensor.setValue(percent);
 
 	if (percent >= 100) // if full, turn off solenoid immediately
@@ -139,7 +136,7 @@ void setup()
 
 	Serial.begin(115200);
 	Serial.println();
-	Serial.println(F("Initializing.. ver. 4.0.0"));
+	Serial.println(F("Initializing.. ver. 4.0.4"));
 
 	pinMode(PIN_BLINKING_LED, OUTPUT);
 	digitalWrite(PIN_BLINKING_LED, LOW); // Turn on led at start
@@ -155,31 +152,38 @@ void setup()
 
 	device.enableSharedAvailability();
 	device.enableLastWill();
+
 #ifndef SIMULATION_MODE
 	device.setName("Water tank controller");
 #else
 	device.setName("Water tank controller (Simulated)");
 #endif
-	device.setSoftwareVersion("4.0.0");
+	device.setSoftwareVersion("4.0.4");
 	device.setManufacturer("Gregory Nikolaishvili");
 
 	valveOpenSwitch.setName("Valve Open Switch");
 	valveOpenSwitch.setIcon("mdi:valve-open");
+	valveOpenSwitch.setDeviceClass("opening");
 
 	valveCloseSwitch.setName("Valve Close Switch");
 	valveCloseSwitch.setIcon("mdi:valve-closed");
 
 	waterValve.setName("Water Valve");
 	waterValve.setIcon("mdi:pipe-valve");
+	waterValve.setDeviceClass("water");
 	waterValve.onCommand(onValveCommand);
 
 	pressureSensor.setName("Voltage");
 	pressureSensor.setDeviceClass("voltage");
 	pressureSensor.setUnitOfMeasurement("mV");
+	pressureSensor.setDeviceClass("pressure");
+	pressureSensor.setStateClass("measurement");
 
 	waterTankSensor.setName("Water Tank Level");
 	waterTankSensor.setUnitOfMeasurement("%");
 	waterTankSensor.setIcon("mdi:car-coolant-level");
+	waterTankSensor.setDeviceClass("water");
+	waterTankSensor.setStateClass("measurement");
 
 	gardenPumpBig.onCommand(onRelayCommand);
 	gardenPumpSmall.onCommand(onRelayCommand);
@@ -193,12 +197,12 @@ void setup()
 	valveCloseSwitch.setCurrentState(true);
 
 	mqtt.loop();
-	pressureSensorX = new PressureSensorX(pressureSensor);
-	ballValve = new BallValve(&waterValve, &valveOpenSwitch, &valveCloseSwitch, pressureSensorX);
+	pressureReader = new PressureReader(pressureSensor);
+	ballValve = new BallValve(&waterValve, &valveOpenSwitch, &valveCloseSwitch, pressureReader);
 
 	mqtt.loop();
-	pressureSensorX->processPressureSensor(mqtt, true);
-	waterTankSensor.setCurrentValue(pressureSensorX->getWaterTankPercent());
+	pressureReader->processPressureSensor(mqtt, true);
+	waterTankSensor.setCurrentValue(pressureReader->getWaterTankPercent());
 
 	ballValve->initializeBallValve();
 

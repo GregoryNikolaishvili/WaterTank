@@ -1,4 +1,4 @@
-﻿#include <arduino.h>
+﻿#include <Arduino.h>
 #include "MovingAverageFilter.h"
 
 MovingAverageFilter::MovingAverageFilter(unsigned int newDataPointsCount, int newErrorValue)
@@ -14,7 +14,7 @@ MovingAverageFilter::MovingAverageFilter(unsigned int newDataPointsCount, int ne
 	readingCount = 0;
 	totalErrors = 0;
 
-	currentIdx = 0; //initialize so that we start to write at index 0
+	currentIdx = 0; // initialize so that we start to write at index 0
 
 	for (unsigned int i = 0; i < dataPointsCount; i++)
 	{

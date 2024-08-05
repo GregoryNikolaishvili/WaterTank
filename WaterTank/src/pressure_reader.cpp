@@ -1,10 +1,10 @@
-#include "pressure.h"
+#include "pressure_reader.h"
 #include "main.h"
 
 const byte DEF_SETTINGS_VERSION = 0x00;
 const int STORAGE_ADDRESS_SETTINGS = 0;
 
-PressureSensorX::PressureSensorX(HASensorNumber &pressureSensor)
+PressureReader::PressureReader(HASensorNumber &pressureSensor)
 {
 	_pressureSensor = &pressureSensor;
 
@@ -17,7 +17,7 @@ PressureSensorX::PressureSensorX(HASensorNumber &pressureSensor)
 	readSettings();
 }
 
-void PressureSensorX::processPressureSensor(HAMqtt &mqtt, bool isInitialization)
+void PressureReader::processPressureSensor(HAMqtt &mqtt, bool isInitialization)
 {
 	int milliVolts = readVoltageMV(mqtt);
 
@@ -37,7 +37,7 @@ void PressureSensorX::processPressureSensor(HAMqtt &mqtt, bool isInitialization)
 		_pressureSensor->setValue(newValue);
 }
 
-int PressureSensorX::readVoltageMV(HAMqtt &mqtt)
+int PressureReader::readVoltageMV(HAMqtt &mqtt)
 {
 	int sum = 0;
 	for (byte i = 0; i < 16; i++)
@@ -49,7 +49,7 @@ int PressureSensorX::readVoltageMV(HAMqtt &mqtt)
 	return (sum * REFERENCE_VOLTAGE_MV) / 16 / 1024;
 }
 
-int PressureSensorX::getWaterTankPercent()
+int PressureReader::getWaterTankPercent()
 {
 	int voltage = (_voltageAvg->getCurrentValue() / 10) * 10; // Round
 
@@ -68,7 +68,7 @@ int PressureSensorX::getWaterTankPercent()
 	return (voltage - empty) * (long)100 / (full - empty);
 }
 
-void PressureSensorX::readSettings()
+void PressureReader::readSettings()
 {
 	// Big tank
 	_tankVoltageSettings.empty = 580; // mv

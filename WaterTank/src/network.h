@@ -1,9 +1,9 @@
 #ifndef _NETWORK_H
 #define _NETWORK_H
 
-#include "main.h"
-
 #ifndef SIMULATION_MODE
+
+#include "main.h"
 
 #include <Ethernet.h>
 

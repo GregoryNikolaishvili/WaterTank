@@ -1,11 +1,11 @@
 #include "ball_valve.h"
 
-BallValve::BallValve(HAValveX *waterValve, HABinarySensor *valveOpenSwitch, HABinarySensor *valveCloseSwitch, PressureSensorX *pressureSensor)
+BallValve::BallValve(HAValveX *waterValve, HABinarySensor *valveOpenSwitch, HABinarySensor *valveCloseSwitch, PressureReader *pressureReader)
 {
 	_waterValve = waterValve;
 	_valveOpenSwitch = valveOpenSwitch;
 	_valveCloseSwitch = valveCloseSwitch;
-	_pressureSensor = pressureSensor;
+	_pressureSensor = pressureReader;
 
 	pinMode(PIN_BALL_VALVE_BIG_OPEN, INPUT_PULLUP);
 	pinMode(PIN_BALL_VALVE_BIG_CLOSED, INPUT_PULLUP);

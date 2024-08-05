@@ -1,5 +1,5 @@
-#ifndef AHA_HAVALVEX_H
-#define AHA_HAVALVEX_H
+#ifndef _HAVALVEX_H
+#define _HAVALVEX_H
 
 #include <ArduinoHA.h>
 //#include "HABaseDeviceType.h"

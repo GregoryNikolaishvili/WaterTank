@@ -1,17 +1,17 @@
-#ifndef _BALL_VALVE_h
-#define _BALL_VALVE_h
+#ifndef _BALL_VALVE_H
+#define _BALL_VALVE_H
 
 #include <Arduino.h>
 #include <ArduinoHA.h>
 #include <HAValveX.h>
 
 #include "main.h"
-#include "pressure.h"
+#include "pressure_reader.h"
 
 class BallValve
 {
 public:
-    BallValve(HAValveX *waterValve, HABinarySensor *valveOpenSwitch, HABinarySensor *valveCloseSwitch, PressureSensorX *pressureSensor);
+    BallValve(HAValveX *waterValve, HABinarySensor *valveOpenSwitch, HABinarySensor *valveCloseSwitch, PressureReader *pressureSensor);
 
     void initializeBallValve();
     void setBallValve(bool value, unsigned long secondTicks);
@@ -22,7 +22,7 @@ public:
 
 private:
     int _ball_valve_state;
-    PressureSensorX *_pressureSensor;
+    PressureReader *_pressureSensor;
 
     HAValveX *_waterValve;
     HABinarySensor *_valveOpenSwitch;

@@ -1,5 +1,5 @@
-#ifndef _MAIN_h
-#define _MAIN_h
+#ifndef _MAIN_H
+#define _MAIN_H
 
 //#define SIMULATION_MODE
 

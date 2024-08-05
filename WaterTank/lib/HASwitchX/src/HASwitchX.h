@@ -1,5 +1,5 @@
-#ifndef _HASWITCHX_h
-#define _HASWITCHX_h
+#ifndef _HASWITCHX_H
+#define _HASWITCHX_H
 
 #include <ArduinoHA.h>
 
