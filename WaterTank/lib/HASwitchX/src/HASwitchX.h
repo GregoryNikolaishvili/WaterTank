@@ -21,9 +21,6 @@ public:
 private:
     byte _pinId;
     bool _isInverted;
-
-    /// The name that was set using setName method. It can be nullptr.
-    const char *_name;
 };
 
 #endif
